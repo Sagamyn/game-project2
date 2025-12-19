@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3cc05072ca6b6f469edb3225d4eebc2, type: 3}
+  m_Name: Potato
+  m_EditorClassIdentifier: 
+  seedTile: {fileID: 11400000, guid: 70e6f13e26e6d084098a6f88b924cecc, type: 2}
+  sproutTile: {fileID: 11400000, guid: 462ebe46d3540044a929578cfd97db68, type: 2}
+  grownTile: {fileID: 11400000, guid: 67e5cf8304cc00240a3675898967cdde, type: 2}
+  seedTime: 5
+  sproutTime: 5
+  harvestPrefab: {fileID: 6769217820621956873, guid: a4d46c2964d72344b8ede39dc3cbf424, type: 3}
+  minHarvestAmount: 1
+  maxHarvestAmount: 3
