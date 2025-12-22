@@ -117,4 +117,24 @@ public class Hotbar : MonoBehaviour
 
         return slots[index];
     }
+
+    public void ClearSlotsContaining(ItemData item)
+{
+    bool cleared = false;
+
+    for (int i = 0; i < slots.Length; i++)
+    {
+        if (slots[i] == item)
+        {
+            slots[i] = null;
+            cleared = true;
+
+            if (i == selectedIndex)
+                playerFarming.selectedItem = null;
+        }
+    }
+
+    if (cleared && hotbarUI != null)
+        hotbarUI.Refresh();
+}
 }
