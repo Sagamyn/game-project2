@@ -11,8 +11,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - Ground
+  - Item
   - 
   - 
   - 
@@ -50,7 +50,7 @@ TagManager:
   - name: Player
     uniqueID: 1229884313
     locked: 0
-  - name: Objects
+  - name: Item
     uniqueID: 1465934011
     locked: 0
   - name: AbovePlayer

@@ -10,13 +10,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b3cc05072ca6b6f469edb3225d4eebc2, type: 3}
-  m_Name: Potato
+  m_Name: StrawberryCrop
   m_EditorClassIdentifier: 
-  seedTile: {fileID: 11400000, guid: 70e6f13e26e6d084098a6f88b924cecc, type: 2}
-  sproutTile: {fileID: 11400000, guid: 462ebe46d3540044a929578cfd97db68, type: 2}
-  grownTile: {fileID: 11400000, guid: 67e5cf8304cc00240a3675898967cdde, type: 2}
+  seedTile: {fileID: 11400000, guid: 36e920d6d58151542bee903ea4816dba, type: 2}
+  sproutTile: {fileID: 11400000, guid: 62155c0cda0344946b8268ad60e9680d, type: 2}
+  grownTile: {fileID: 11400000, guid: 478942837184ba34da2af329bdd88ee0, type: 2}
   seedTime: 5
   sproutTime: 5
-  harvestPrefab: {fileID: 6769217820621956873, guid: a4d46c2964d72344b8ede39dc3cbf424, type: 3}
+  harvestPrefab: {fileID: 7902228740665826070, guid: bb2dd28259415a14b8ed51ff151e4789, type: 3}
   minHarvestAmount: 1
   maxHarvestAmount: 3
+  burstForce: 3
+  burstTorque: 6
+  harvestDespawnTime: 10
