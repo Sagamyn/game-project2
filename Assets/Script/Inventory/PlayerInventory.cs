@@ -56,7 +56,7 @@ public class PlayerInventory : MonoBehaviour
 
     public void ConsumeItem(ItemData item, int amount = 1)
     {
-        for (int i = items.Count - 1; i >= 0; i--)
+        for (int i = 0; i < items.Count; i++)
         {
             if (items[i].item == item)
             {
@@ -64,7 +64,12 @@ public class PlayerInventory : MonoBehaviour
 
                 if (items[i].amount <= 0)
                 {
-                    items.RemoveAt(i);
+                    items[i].amount = 0;
+
+                    // 🔥 NOTIFY HOTBAR THAT THIS ITEM IS GONE
+                    Hotbar hotbar = FindObjectOfType<Hotbar>();
+                    if (hotbar != null)
+                        hotbar.ClearSlotsContaining(item);
                 }
 
                 OnInventoryChanged?.Invoke();
@@ -72,5 +77,6 @@ public class PlayerInventory : MonoBehaviour
             }
         }
     }
+
 
 }
