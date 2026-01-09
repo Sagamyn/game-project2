@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bf85c1c65fbc4c45bfe6c85c849cf85, type: 3}
+  m_Name: Wood Please!
+  m_EditorClassIdentifier: 
+  questName: Find some wood
+  startDialogue:
+  - Hello, welcome to the *** town!
+  - 'My name is ***, nice farm you got there '
+  - Can you do me a favor?
+  - I need some woods to fix my fence, in return i give you these 5 potato seed how
+    about that?
+  incompleteDialogue: Not enough yet
+  completeDialogue:
+  - Thanks a lot, here's the gift make sure to plant it
+  requiredItem: {fileID: 11400000, guid: 1efc420df1d8acf40854378014df9a33, type: 2}
+  requiredAmount: 5
+  rewardItem: {fileID: 11400000, guid: 30361f6b9d1c01e40b8d49143ee245b6, type: 2}
+  rewardAmount: 5

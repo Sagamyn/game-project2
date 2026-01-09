@@ -4,28 +4,65 @@ public class CropInstance
 {
     public Vector3Int cell;
     public CropData data;
-    float plantedTime;
+
+    CropStage stage = CropStage.Seed;
+    float growthTimer = 0f;
+    bool watered = false;
 
     public CropInstance(Vector3Int cell, CropData data)
     {
         this.cell = cell;
         this.data = data;
-        plantedTime = Time.time;
     }
 
-    public CropStage GetStage()
+    // Called every frame
+    public void Tick(float dt)
     {
-        float elapsed = Time.time - plantedTime;
+        if (!watered)
+            return;
 
-        if (elapsed < data.seedTime)
-            return CropStage.Seed;
+        growthTimer += dt;
 
-        if (elapsed < data.seedTime + data.sproutTime)
-            return CropStage.Sprout;
+        float stageTime = GetStageDuration();
 
-        return CropStage.Grown;
+        if (growthTimer >= stageTime)
+        {
+            AdvanceStage();
+        }
     }
 
-    public bool CanHarvest =>
-        GetStage() == CropStage.Grown;
+    float GetStageDuration()
+    {
+        return stage switch
+        {
+            CropStage.Seed => data.seedTime,
+            CropStage.Sprout => data.sproutTime,
+            _ => 0f
+        };
+    }
+
+    void AdvanceStage()
+    {
+        growthTimer = 0f;
+        watered = false; // 🔥 WATER IS CONSUMED
+
+        if (stage == CropStage.Seed)
+            stage = CropStage.Sprout;
+        else if (stage == CropStage.Sprout)
+            stage = CropStage.Grown;
+    }
+
+    public void Water()
+    {
+        if (stage == CropStage.Grown)
+            return;
+
+        watered = true;
+    }
+
+    public CropStage GetStage() => stage;
+
+    public bool CanHarvest => stage == CropStage.Grown;
+
+    public bool IsWatered => watered;
 }

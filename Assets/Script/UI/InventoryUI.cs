@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -7,20 +8,41 @@ public class InventoryUI : MonoBehaviour
     public PlayerMovement playerMovement;
     public PlayerFarming playerFarming;
 
+    [Header("UI Setup")]
     public InventorySlotUI slotPrefab;
     public Transform gridParent;
     public Hotbar hotbar;
-    [Header("UI")]
-    public GameObject panel; //  the visual panel only
+    public GameObject panel;
 
-    InventorySlotUI selectedSlot;
-    bool isOpen;
+    private List<InventorySlotUI> slotUIList = new List<InventorySlotUI>();
+    private bool isOpen;
+    private bool isRefreshing = false; // Prevent refresh loops
 
     void Start()
     {
-        inventory.OnInventoryChanged += Refresh;
+        // Subscribe to inventory changes
+        if (inventory != null)
+        {
+            inventory.OnInventoryChanged += Refresh;
+        }
+
+        // Create all slots once at start
+        CreateSlots();
+
+        // Close inventory by default
         panel.SetActive(false);
         isOpen = false;
+
+        // Initial refresh
+        Refresh();
+    }
+
+    void OnDestroy()
+    {
+        if (inventory != null)
+        {
+            inventory.OnInventoryChanged -= Refresh;
+        }
     }
 
     void Update()
@@ -54,57 +76,100 @@ public class InventoryUI : MonoBehaviour
             playerMovement.LockMovement(false);
     }
 
-    void Refresh()
+    // Create slots ONCE at the start - they never get destroyed
+    void CreateSlots()
     {
+        // Clear any existing slots
         foreach (Transform child in gridParent)
             Destroy(child.gameObject);
 
-        selectedSlot = null;
+        slotUIList.Clear();
 
-        foreach (var itemSlot in inventory.items)
+        // Create slots for all inventory positions
+        for (int i = 0; i < inventory.maxSlots; i++)
         {
-            InventorySlotUI slot =
-                Instantiate(slotPrefab, gridParent);
+            InventorySlotUI slot = Instantiate(slotPrefab, gridParent);
+            slot.name = $"InventorySlot_{i}"; // Give it a clear name for debugging
+            slot.Initialize(i); // Pass the index
+            slotUIList.Add(slot);
 
-            slot.Set(itemSlot.item, itemSlot.amount);
-
+            // Store the original position after layout
+            Canvas.ForceUpdateCanvases();
+            
+            // Add click listener for hotbar assignment
+            int index = i; // Capture for lambda
             slot.GetComponent<UnityEngine.UI.Button>()
-                .onClick.AddListener(() =>
-                    SelectSlot(slot));
+                ?.onClick.AddListener(() => AssignToHotbar(index));
         }
+
+        // Force layout update
+        Canvas.ForceUpdateCanvases();
+
+        Debug.Log($"Created {slotUIList.Count} inventory slots");
     }
 
-    void SelectSlot(InventorySlotUI slot)
+    // Update slot visuals without destroying them
+    public void Refresh()
     {
-        if (slot == null)
+        // Prevent recursive refresh calls
+        if (isRefreshing) return;
+        isRefreshing = true;
+
+        if (inventory == null || inventory.items == null)
         {
-            Debug.LogError("Slot is null");
+            Debug.LogWarning("Inventory or items list is null!");
+            isRefreshing = false;
             return;
         }
 
+        // Make sure we have enough slots
+        if (slotUIList.Count == 0)
+        {
+            CreateSlots();
+        }
+
+        // Update each slot's display WITHOUT changing their position
+        for (int i = 0; i < slotUIList.Count && i < inventory.items.Count; i++)
+        {
+            if (slotUIList[i] != null)
+            {
+                var itemSlot = inventory.items[i];
+                slotUIList[i].Set(itemSlot.item, itemSlot.amount);
+            }
+        }
+
+        isRefreshing = false;
+        Debug.Log("Inventory UI refreshed - slots updated in place");
+    }
+
+    void AssignToHotbar(int inventorySlotIndex)
+    {
         if (hotbar == null)
         {
-            Debug.LogError("Hotbar reference is NULL in InventoryUI");
+            Debug.LogError("Hotbar reference is NULL!");
             return;
         }
 
-        ItemData item = slot.GetItem();
+        if (inventorySlotIndex < 0 || inventorySlotIndex >= inventory.items.Count)
+        {
+            Debug.LogError($"Invalid slot index: {inventorySlotIndex}");
+            return;
+        }
+
+        ItemData item = inventory.items[inventorySlotIndex].item;
+        
         if (item == null)
         {
-            Debug.LogWarning("Selected slot has no item");
+            Debug.LogWarning("Selected slot is empty");
             return;
         }
 
-        int index = hotbar.selectedIndex;
+        int hotbarIndex = hotbar.selectedIndex;
+        Debug.Log($"Assigning {item.itemName} to hotbar slot {hotbarIndex}");
 
-        Debug.Log($"Assigning {item.itemName} to hotbar slot {index}");
-
-        hotbar.SetSlot(index, item);
-        hotbar.Select(index);
+        hotbar.SetSlot(hotbarIndex, item);
 
         if (playerFarming != null)
             playerFarming.selectedItem = item;
     }
-
-
 }

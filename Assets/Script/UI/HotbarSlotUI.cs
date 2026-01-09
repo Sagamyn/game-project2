@@ -97,6 +97,12 @@ public class HotbarSlotUI : MonoBehaviour,
         if (droppedItem == null) return;
 
         hotbar.SetSlot(slotIndex, droppedItem);
+
+            InventoryUI inventoryUI = FindObjectOfType<InventoryUI>();
+    if (inventoryUI != null)
+    {
+        inventoryUI.Refresh();
+    }
     }
 
     // 🔹 CALLED BY INVENTORY DROP

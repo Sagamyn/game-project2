@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3cc05072ca6b6f469edb3225d4eebc2, type: 3}
+  m_Name: OnionCropData
+  m_EditorClassIdentifier: 
+  seedTile: {fileID: 11400000, guid: 3b52e8b7bec79e349b2d6094a5c89c47, type: 2}
+  sproutTile: {fileID: 11400000, guid: a5f47a6360601ff4e90ce2e7381473b1, type: 2}
+  grownTile: {fileID: 11400000, guid: d2584716553e92c4e9d801122fab7af0, type: 2}
+  seedTime: 5
+  sproutTime: 5
+  harvestItem: {fileID: 11400000, guid: 18c974261269fcc4b8b6e2cc69f1b874, type: 2}
+  harvestPrefab: {fileID: 3238750535084947364, guid: 73916eacfb040f241b288ae1e89597d7, type: 3}
+  minHarvestAmount: 1
+  maxHarvestAmount: 3
+  burstForce: 3
+  burstTorque: 6
+  harvestDespawnTime: 10

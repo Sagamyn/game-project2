@@ -11,48 +11,103 @@ public class PlayerInventory : MonoBehaviour
         public int amount;
     }
 
+    public int maxSlots = 28;
     public List<InventorySlot> items = new List<InventorySlot>();
-
     public event Action OnInventoryChanged;
+
+    void Awake()
+    {
+        // Initialize with empty slots at the very start
+        InitializeSlots();
+    }
+
+    void InitializeSlots()
+    {
+        // Only initialize if empty
+        if (items.Count == 0)
+        {
+            for (int i = 0; i < maxSlots; i++)
+            {
+                items.Add(new InventorySlot { item = null, amount = 0 });
+            }
+        }
+    }
 
     public bool HasItem(ItemData item)
     {
+        if (item == null)
+            return false;
+
         foreach (var slot in items)
+        {
             if (slot.item == item && slot.amount > 0)
                 return true;
+        }
         return false;
     }
 
+    // Amount-based check (used by quests, crafting, farming, etc.)
+    public bool HasItem(ItemData item, int requiredAmount)
+    {
+        if (item == null)
+            return false;
+
+        int total = 0;
+
+        foreach (var slot in items)
+        {
+            if (slot.item == item)
+            {
+                total += slot.amount;
+
+                if (total >= requiredAmount)
+                    return true;
+            }
+        }
+
+    return false;
+}
+
     public int GetAmount(ItemData item)
     {
+        int total = 0;
         foreach (var slot in items)
             if (slot.item == item)
-                return slot.amount;
-        return 0;
+                total += slot.amount;
+        return total;
     }
 
     public bool AddItem(ItemData item, int amount)
     {
-        foreach (var slot in items)
+        // Try to stack with existing item first
+        if (item.stackable)
         {
-            if (slot.item == item && item.stackable)
+            for (int i = 0; i < items.Count; i++)
             {
-                slot.amount += amount;
+                if (items[i].item == item && items[i].amount > 0)
+                {
+                    items[i].amount += amount;
+                    OnInventoryChanged?.Invoke();
+                    return true;
+                }
+            }
+        }
+
+        // Find first empty slot
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i].item == null || items[i].amount <= 0)
+            {
+                items[i].item = item;
+                items[i].amount = amount;
                 OnInventoryChanged?.Invoke();
                 return true;
             }
         }
-
-        items.Add(new InventorySlot
-        {
-            item = item,
-            amount = amount
-        });
-
-        OnInventoryChanged?.Invoke();
-        return true;
+         Debug.Log($"Trying to add {item.itemName} x{amount}");
+        Debug.LogWarning("Inventory is full!");
+        return false;
     }
-
 
     public void ConsumeItem(ItemData item, int amount = 1)
     {
@@ -64,9 +119,10 @@ public class PlayerInventory : MonoBehaviour
 
                 if (items[i].amount <= 0)
                 {
+                    // Clear the slot but keep it in the list
+                    items[i].item = null;
                     items[i].amount = 0;
 
-                    // 🔥 NOTIFY HOTBAR THAT THIS ITEM IS GONE
                     Hotbar hotbar = FindObjectOfType<Hotbar>();
                     if (hotbar != null)
                         hotbar.ClearSlotsContaining(item);
@@ -78,5 +134,20 @@ public class PlayerInventory : MonoBehaviour
         }
     }
 
+    // NEW: Swap two inventory slots by index
+    public void SwapSlots(int index1, int index2)
+    {
+        if (index1 < 0 || index1 >= items.Count || index2 < 0 || index2 >= items.Count)
+        {
+            Debug.LogError($"Invalid swap indices: {index1}, {index2}");
+            return;
+        }
 
+        // Swap the actual slot data
+        InventorySlot temp = items[index1];
+        items[index1] = items[index2];
+        items[index2] = temp;
+
+        OnInventoryChanged?.Invoke();
+    }
 }
