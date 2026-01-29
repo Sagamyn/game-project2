@@ -81,6 +81,10 @@ public class DialogueManager : MonoBehaviour
 
         PlayerMovement.Instance?.LockMovement(true);
 
+        if (HotbarVisibilityManager.Instance != null)
+        {
+            HotbarVisibilityManager.Instance.OnDialogueStart();
+        }
         if (playerInteraction != null)
             playerInteraction.enabled = false;
 
@@ -154,10 +158,13 @@ public class DialogueManager : MonoBehaviour
         dialogueUI.SetActive(false);
         continueIcon.SetActive(false);
         
-        if (playerInteraction != null)
-            playerInteraction.ResetInteraction();
 
         PlayerMovement.Instance?.LockMovement(false);
+        
+        if (HotbarVisibilityManager.Instance != null)
+        {
+            HotbarVisibilityManager.Instance.OnDialogueEnd();
+        }
 
         StartCoroutine(ReEnableInteractionNextFrame());
     }

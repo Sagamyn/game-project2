@@ -3,7 +3,6 @@ using UnityEngine;
 public class PlayerActionController : MonoBehaviour
 {
     [Header("References")]
-    public PlayerInteraction interaction;
     public PlayerFarming farming;
     public DialogueManager dialogue;
     public PlayerToolController toolController;
@@ -14,18 +13,11 @@ public class PlayerActionController : MonoBehaviour
         if (!Input.GetKeyDown(KeyCode.E))
             return;
 
-        //  Dialogue blocks everything
+        // Dialogue blocks everything
         if (dialogue != null && dialogue.IsOpen)
             return;
 
-        //  Interactions have priority
-        if (interaction != null && interaction.HasInteractable)
-        {
-            interaction.TryInteract();
-            return;
-        }
-
-        //  Hotbar check
+        // Hotbar check
         if (hotbar == null)
         {
             Debug.LogError("PlayerActionController: Hotbar is NULL");
@@ -34,7 +26,7 @@ public class PlayerActionController : MonoBehaviour
 
         ItemData selected = hotbar.SelectedItem;
 
-        //  Tool usage
+        // Tool usage
         if (selected is ToolItem tool)
         {
             if (toolController == null)
@@ -47,7 +39,7 @@ public class PlayerActionController : MonoBehaviour
             return;
         }
 
-        //  Farming (seeds / harvesting)
+        // Farming (seeds / harvesting)
         if (farming != null)
         {
             farming.TryFarm();

@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class PlayerInventory : InventoryBase
+public class ChestInventory : InventoryBase
 {
     public int maxSlots = 20;
 
@@ -18,18 +18,20 @@ public class PlayerInventory : InventoryBase
             {
                 items.Add(new InventorySlot());
             }
-            Debug.Log($"PlayerInventory initialized with {maxSlots} empty slots");
+            Debug.Log($"ChestInventory initialized with {maxSlots} empty slots");
         }
         else
         {
-            Debug.Log($"PlayerInventory already has {items.Count} slots - skipping init");
+            Debug.Log($"ChestInventory already has {items.Count} slots - skipping init");
         }
     }
 
+    // Chest-specific: just override if you need custom behavior
     public override bool AddItem(ItemData item, int amount)
     {
         if (item == null || amount <= 0) return false;
 
+        // Try to stack if stackable
         if (item.stackable)
         {
             foreach (var slot in items)
@@ -43,6 +45,7 @@ public class PlayerInventory : InventoryBase
             }
         }
 
+        // Find empty slot
         foreach (var slot in items)
         {
             if (slot.IsEmpty)
@@ -54,27 +57,7 @@ public class PlayerInventory : InventoryBase
             }
         }
 
-        Debug.LogWarning("Player inventory is full!");
+        Debug.LogWarning("Chest is full!");
         return false;
-    }   
-
-    public override void ConsumeItem(ItemData item, int amount)
-    {
-        foreach (var slot in items)
-        {
-            if (slot.item == item)
-            {
-                slot.amount -= amount;
-
-                if (slot.amount <= 0)
-                {
-                    slot.item = null;
-                    slot.amount = 0;
-                }
-
-                NotifyChanged();
-                return;
-            }
-        }
     }
 }

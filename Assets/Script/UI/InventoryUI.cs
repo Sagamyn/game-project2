@@ -13,6 +13,7 @@ public class InventoryUI : MonoBehaviour
     public Transform gridParent;
     public Hotbar hotbar;
     public GameObject panel;
+    public UIAnimator uiAnimator; // Optional: for animations
 
     private List<InventorySlotUI> slotUIList = new List<InventorySlotUI>();
     private bool isOpen;
@@ -29,8 +30,16 @@ public class InventoryUI : MonoBehaviour
         // Create all slots once at start
         CreateSlots();
 
-        // Close inventory by default
-        panel.SetActive(false);
+        // Close inventory by default - but keep InventoryUI active!
+        if (uiAnimator != null)
+        {
+            uiAnimator.HideInstant();
+        }
+        else
+        {
+            panel.SetActive(false);
+        }
+
         isOpen = false;
 
         // Initial refresh
@@ -47,6 +56,7 @@ public class InventoryUI : MonoBehaviour
 
     void Update()
     {
+        // Always check for Tab input, even when panel is hidden
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             if (isOpen)
@@ -59,10 +69,26 @@ public class InventoryUI : MonoBehaviour
     void OpenInventory()
     {
         isOpen = true;
-        panel.SetActive(true);
+
+        // Use animator if available
+        if (uiAnimator != null)
+        {
+            panel.SetActive(true); // Activate first
+            uiAnimator.Show();
+        }
+        else
+        {
+            panel.SetActive(true);
+        }
 
         if (playerMovement != null)
             playerMovement.LockMovement(true);
+
+        // Optional: Hide hotbar when inventory opens
+        if (HotbarVisibilityManager.Instance != null)
+        {
+            HotbarVisibilityManager.Instance.OnInventoryOpen();
+        }
 
         Refresh();
     }
@@ -70,10 +96,21 @@ public class InventoryUI : MonoBehaviour
     void CloseInventory()
     {
         isOpen = false;
-        panel.SetActive(false);
+
+        // Use animator if available, otherwise just hide
+        if (uiAnimator != null)
+            uiAnimator.Hide();
+        else
+            panel.SetActive(false);
 
         if (playerMovement != null)
             playerMovement.LockMovement(false);
+
+        // Optional: Show hotbar when inventory closes
+        if (HotbarVisibilityManager.Instance != null)
+        {
+            HotbarVisibilityManager.Instance.OnInventoryClose();
+        }
     }
 
     // Create slots ONCE at the start - they never get destroyed
@@ -85,6 +122,20 @@ public class InventoryUI : MonoBehaviour
 
         slotUIList.Clear();
 
+        if (slotPrefab == null)
+        {
+            Debug.LogError("Slot Prefab is NULL! Please assign it in the Inspector.");
+            return;
+        }
+
+        if (gridParent == null)
+        {
+            Debug.LogError("Grid Parent is NULL! Please assign it in the Inspector.");
+            return;
+        }
+
+        Debug.Log($"Creating {inventory.maxSlots} slots...");
+
         // Create slots for all inventory positions
         for (int i = 0; i < inventory.maxSlots; i++)
         {
@@ -93,19 +144,24 @@ public class InventoryUI : MonoBehaviour
             slot.Initialize(i); // Pass the index
             slotUIList.Add(slot);
 
-            // Store the original position after layout
-            Canvas.ForceUpdateCanvases();
+            // Make sure the slot is active and visible
+            slot.gameObject.SetActive(true);
             
             // Add click listener for hotbar assignment
             int index = i; // Capture for lambda
-            slot.GetComponent<UnityEngine.UI.Button>()
-                ?.onClick.AddListener(() => AssignToHotbar(index));
+            var button = slot.GetComponent<UnityEngine.UI.Button>();
+            if (button != null)
+            {
+                button.onClick.AddListener(() => AssignToHotbar(index));
+            }
+
+            Debug.Log($"Created slot {i}: {slot.name}");
         }
 
         // Force layout update
         Canvas.ForceUpdateCanvases();
 
-        Debug.Log($"Created {slotUIList.Count} inventory slots");
+        Debug.Log($"✓ Successfully created {slotUIList.Count} inventory slots");
     }
 
     // Update slot visuals without destroying them
@@ -125,8 +181,11 @@ public class InventoryUI : MonoBehaviour
         // Make sure we have enough slots
         if (slotUIList.Count == 0)
         {
+            Debug.LogWarning("No slots found! Creating slots...");
             CreateSlots();
         }
+
+        Debug.Log($"Refreshing {slotUIList.Count} slots with {inventory.items.Count} items");
 
         // Update each slot's display WITHOUT changing their position
         for (int i = 0; i < slotUIList.Count && i < inventory.items.Count; i++)
@@ -135,11 +194,21 @@ public class InventoryUI : MonoBehaviour
             {
                 var itemSlot = inventory.items[i];
                 slotUIList[i].Set(itemSlot.item, itemSlot.amount);
+                
+                // Debug each slot
+                if (itemSlot.item != null)
+                {
+                    Debug.Log($"Slot {i}: {itemSlot.item.itemName} x{itemSlot.amount}");
+                }
+            }
+            else
+            {
+                Debug.LogError($"Slot {i} is NULL!");
             }
         }
 
         isRefreshing = false;
-        Debug.Log("Inventory UI refreshed - slots updated in place");
+        Debug.Log("✓ Inventory UI refreshed - slots updated in place");
     }
 
     void AssignToHotbar(int inventorySlotIndex)
