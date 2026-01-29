@@ -1,82 +1,80 @@
 using UnityEngine;
-using System;
-using System.Collections.Generic;
 
-public class PlayerInventory : MonoBehaviour
+public class PlayerInventory : InventoryBase
 {
-    [Serializable]
-    public class InventorySlot
+    public int maxSlots = 20;
+
+    void Awake()
     {
-        public ItemData item;
-        public int amount;
+        Initialize();
     }
 
-    public List<InventorySlot> items = new List<InventorySlot>();
-
-    public event Action OnInventoryChanged;
-
-    public bool HasItem(ItemData item)
+    void Initialize()
     {
-        foreach (var slot in items)
-            if (slot.item == item && slot.amount > 0)
-                return true;
-        return false;
+        // CRITICAL: Only initialize if empty
+        if (items.Count == 0)
+        {
+            for (int i = 0; i < maxSlots; i++)
+            {
+                items.Add(new InventorySlot());
+            }
+            Debug.Log($"PlayerInventory initialized with {maxSlots} empty slots");
+        }
+        else
+        {
+            Debug.Log($"PlayerInventory already has {items.Count} slots - skipping init");
+        }
     }
 
-    public int GetAmount(ItemData item)
+    public override bool AddItem(ItemData item, int amount)
     {
-        foreach (var slot in items)
-            if (slot.item == item)
-                return slot.amount;
-        return 0;
-    }
+        if (item == null || amount <= 0) return false;
 
-    public bool AddItem(ItemData item, int amount)
-    {
+        if (item.stackable)
+        {
+            foreach (var slot in items)
+            {
+                if (slot.item == item)
+                {
+                    slot.amount += amount;
+                    NotifyChanged();
+                    return true;
+                }
+            }
+        }
+
         foreach (var slot in items)
         {
-            if (slot.item == item && item.stackable)
+            if (slot.IsEmpty)
             {
-                slot.amount += amount;
-                OnInventoryChanged?.Invoke();
+                slot.item = item;
+                slot.amount = amount;
+                NotifyChanged();
                 return true;
             }
         }
 
-        items.Add(new InventorySlot
-        {
-            item = item,
-            amount = amount
-        });
+        Debug.LogWarning("Player inventory is full!");
+        return false;
+    }   
 
-        OnInventoryChanged?.Invoke();
-        return true;
-    }
-
-
-    public void ConsumeItem(ItemData item, int amount = 1)
+    public override void ConsumeItem(ItemData item, int amount)
     {
-        for (int i = 0; i < items.Count; i++)
+        foreach (var slot in items)
         {
-            if (items[i].item == item)
+            if (slot.item == item)
             {
-                items[i].amount -= amount;
+                slot.amount -= amount;
 
-                if (items[i].amount <= 0)
+                if (slot.amount <= 0)
                 {
-                    items[i].amount = 0;
-
-                    // 🔥 NOTIFY HOTBAR THAT THIS ITEM IS GONE
-                    Hotbar hotbar = FindObjectOfType<Hotbar>();
-                    if (hotbar != null)
-                        hotbar.ClearSlotsContaining(item);
+                    slot.item = null;
+                    slot.amount = 0;
                 }
 
-                OnInventoryChanged?.Invoke();
+                NotifyChanged();
                 return;
             }
         }
     }
-
-
 }

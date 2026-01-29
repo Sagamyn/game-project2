@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bf85c1c65fbc4c45bfe6c85c849cf85, type: 3}
+  m_Name: SearchStone
+  m_EditorClassIdentifier: 
+  questName: Find Stone
+  startDialogue:
+  - Hello, can you do me a favor again?
+  - i need some rock for my garden
+  - can you help me find it?
+  - i'll give you a reward
+  incompleteDialogue: Not enough rock my friend!
+  completeDialogue:
+  - Great job, thanks a lot
+  - Here, for your trouble!
+  requiredItem: {fileID: 11400000, guid: 14c11576289f2c34384939e3b2986540, type: 2}
+  requiredAmount: 4
+  rewardItem: {fileID: 11400000, guid: c1741ae062abd3c4091dcf8440af856f, type: 2}
+  rewardAmount: 2

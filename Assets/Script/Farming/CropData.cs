@@ -20,6 +20,7 @@ public class CropData : ScriptableObject
     public float sproutTime = 5f;
 
     [Header("Harvest")]
+    public ItemData harvestItem;
     public GameObject harvestPrefab;
     public int minHarvestAmount = 1;
     public int maxHarvestAmount = 3;

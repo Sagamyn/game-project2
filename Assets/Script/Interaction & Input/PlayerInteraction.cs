@@ -3,29 +3,22 @@ using UnityEngine;
 public class PlayerInteraction : MonoBehaviour
 {
     Interactable currentInteractable;
-    bool canInteract = true;
 
     public bool HasInteractable => currentInteractable != null;
 
-    public void TryInteract()
+    void Update()
     {
-        if (!canInteract) return;
-
         if (DialogueManager.Instance != null &&
             DialogueManager.Instance.IsOpen)
             return;
 
-        if (currentInteractable == null) return;
+        if (currentInteractable == null)
+            return;
 
-        canInteract = false; // require key release
-        currentInteractable.Interact();
-    }
-
-    void Update()
-    {
-        // Wait for key release before allowing interaction again
-        if (!canInteract && Input.GetKeyUp(KeyCode.E))
-            canInteract = true;
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            currentInteractable.Interact();
+        }
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -46,11 +39,5 @@ public class PlayerInteraction : MonoBehaviour
             interactable.HideBubble();
             currentInteractable = null;
         }
-    }
-
-    // Called by DialogueManager when closing dialogue
-    public void ResetInteraction()
-    {
-        canInteract = false;
     }
 }

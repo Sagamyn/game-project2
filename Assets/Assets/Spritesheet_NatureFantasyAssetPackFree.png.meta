@@ -1307,48 +1307,6 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Tree_1
-      rect:
-        serializedVersion: 2
-        x: 208
-        y: 128
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: e2f58b0f1bc43854a8f16cb0d5e27e9c
-      internalID: -945676512
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Tree_2
-      rect:
-        serializedVersion: 2
-        x: 224
-        y: 128
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 8425a3bf8b787c942ae8d90c8900eeb9
-      internalID: 1278771282
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: Spritesheet_NatureFantasyAssetPackFree_59
       rect:
         serializedVersion: 2
@@ -1470,48 +1428,6 @@ TextureImporter:
       bones: []
       spriteID: c7f1107a973bbe844acafd1cc239240f
       internalID: 2104720957
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Tree_3
-      rect:
-        serializedVersion: 2
-        x: 208
-        y: 112
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a05c6f9a77c74124eb07e497d749ffa5
-      internalID: -866860546
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Tree_4
-      rect:
-        serializedVersion: 2
-        x: 224
-        y: 112
-        width: 16
-        height: 16
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7042be006ad4aa94bb08d05bf18971da
-      internalID: -2062026779
       vertices: []
       indices: 
       edges: []
@@ -2881,6 +2797,27 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: Spritesheet_NatureFantasyAssetPackFree_13
+      rect:
+        serializedVersion: 2
+        x: 208
+        y: 112
+        width: 32
+        height: 32
+      alignment: 9
+      pivot: {x: 0.49002838, y: 0.20869279}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f05e9fa7870811144872315b3568440d
+      internalID: 996183916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -2937,6 +2874,7 @@ TextureImporter:
       Spritesheet_NatureFantasyAssetPackFree_127: 2061444805
       Spritesheet_NatureFantasyAssetPackFree_128: -2118414400
       Spritesheet_NatureFantasyAssetPackFree_129: 164861156
+      Spritesheet_NatureFantasyAssetPackFree_13: 996183916
       Spritesheet_NatureFantasyAssetPackFree_130: 1973983307
       Spritesheet_NatureFantasyAssetPackFree_131: 1189256858
       Spritesheet_NatureFantasyAssetPackFree_15: -777855514

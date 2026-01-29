@@ -11,6 +11,7 @@ public class Hotbar : MonoBehaviour
     [Header("References")]
     public PlayerFarming playerFarming;
     public HotbarUI hotbarUI;
+    public PlayerInventory playerInventory;
 
     [Header("Scroll")]
     public float scrollCooldown = 0.1f;
@@ -23,7 +24,21 @@ public class Hotbar : MonoBehaviour
 
     void Start()
     {
+        // Subscribe to inventory changes to auto-clear hotbar when items are removed
+        if (playerInventory != null)
+        {
+            playerInventory.OnInventoryChanged += CheckHotbarValidity;
+        }
+
         UpdateSelection();
+    }
+
+    void OnDestroy()
+    {
+        if (playerInventory != null)
+        {
+            playerInventory.OnInventoryChanged -= CheckHotbarValidity;
+        }
     }
 
     void Update()
@@ -118,23 +133,51 @@ public class Hotbar : MonoBehaviour
         return slots[index];
     }
 
-    public void ClearSlotsContaining(ItemData item)
-{
-    bool cleared = false;
-
-    for (int i = 0; i < slots.Length; i++)
+    // Check if hotbar items still exist in player inventory
+    void CheckHotbarValidity()
     {
-        if (slots[i] == item)
-        {
-            slots[i] = null;
-            cleared = true;
+        if (playerInventory == null) return;
 
-            if (i == selectedIndex)
-                playerFarming.selectedItem = null;
+        bool changed = false;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] != null)
+            {
+                // Check if player still has this item
+                if (!playerInventory.HasItem(slots[i]))
+                {
+                    Debug.Log($"Item {slots[i].itemName} no longer in inventory - clearing hotbar slot {i}");
+                    slots[i] = null;
+                    changed = true;
+
+                    if (i == selectedIndex && playerFarming != null)
+                        playerFarming.selectedItem = null;
+                }
+            }
         }
+
+        if (changed && hotbarUI != null)
+            hotbarUI.Refresh();
     }
 
-    if (cleared && hotbarUI != null)
-        hotbarUI.Refresh();
-}
+    public void ClearSlotsContaining(ItemData item)
+    {
+        bool cleared = false;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i] == item)
+            {
+                slots[i] = null;
+                cleared = true;
+
+                if (i == selectedIndex && playerFarming != null)
+                    playerFarming.selectedItem = null;
+            }
+        }
+
+        if (cleared && hotbarUI != null)
+            hotbarUI.Refresh();
+    }
 }

@@ -8,8 +8,9 @@ public class PlayerFarming : MonoBehaviour
     public Tilemap soilTilemap;
     public Tilemap cropTilemap;
 
-    [Header("Tiles")]
+    [Header("Soil Tiles")]
     public TileBase tilledSoilTile;
+    public TileBase wetSoilTile;
 
     [Header("References")]
     public TilemapIndicator indicator;
@@ -20,21 +21,30 @@ public class PlayerFarming : MonoBehaviour
     [Header("Selected Item (from Hotbar)")]
     public ItemData selectedItem;
 
-    // Active crops on the field
-    private Dictionary<Vector3Int, CropInstance> crops =
-        new Dictionary<Vector3Int, CropInstance>();
+    // Crops planted on the field
+    Dictionary<Vector3Int, CropInstance> crops = new();
+
+    // Soil wet state
+    Dictionary<Vector3Int, bool> wateredSoil = new();
 
     void Update()
     {
-        UpdateCrops();
+        float dt = Time.deltaTime;
+
+        foreach (var crop in crops.Values)
+            crop.Tick(dt);
+
+        UpdateCropsVisual();
     }
 
+    // =========================
+    // FARM ACTION
+    // =========================
     public void TryFarm()
     {
-        // Block farming during dialogue or interaction
         if (dialogueManager != null && dialogueManager.IsOpen) return;
         if (playerInteraction != null && playerInteraction.HasInteractable) return;
-        if (indicator == null || soilTilemap == null || cropTilemap == null) return;
+        if (indicator == null) return;
 
         Vector3Int cell =
             soilTilemap.WorldToCell(indicator.transform.position);
@@ -42,46 +52,57 @@ public class PlayerFarming : MonoBehaviour
         TileBase soilTile = soilTilemap.GetTile(cell);
         TileBase cropTile = cropTilemap.GetTile(cell);
 
-
-        if (soilTile == null)
-        {
-            soilTilemap.SetTile(cell, tilledSoilTile);
-            return;
-        }
-
+        //  PLANT
         if (soilTile != null && cropTile == null)
         {
-            if (selectedItem == null) return;
+            if (selectedItem is not SeedItem seedItem)
+                return;
 
-            // Selected item MUST be a seed
-            if (selectedItem is not SeedItem seedItem) return;
-
-            // Must have seed in inventory
-            if (inventory == null || !inventory.HasItem(seedItem)) return;
+            if (!inventory.HasItem(seedItem))
+                return;
 
             CropData data = seedItem.cropData;
             if (data == null) return;
 
-            CropInstance crop = new CropInstance(cell, data);
-            crops[cell] = crop;
+            crops[cell] = new CropInstance(cell, data);
 
             cropTilemap.SetTile(cell, data.seedTile);
             inventory.ConsumeItem(seedItem, 1);
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.plantSound);
+            // New crop starts dry
+            wateredSoil[cell] = false;
             return;
         }
 
-        // 3️⃣ HARVEST
+        // HARVEST
         if (cropTile != null && crops.ContainsKey(cell))
         {
             CropInstance crop = crops[cell];
             if (crop.CanHarvest)
-            {
                 HarvestCrop(cell, crop);
-            }
         }
     }
 
-    void UpdateCrops()
+    // =========================
+    // WATER SYSTEM
+    // =========================
+    public bool HasCrop(Vector3Int cell)
+    {
+        return crops.ContainsKey(cell);
+    }
+
+    public void WaterCrop(Vector3Int cell)
+    {
+        if (!crops.ContainsKey(cell))
+            return;
+
+        crops[cell].Water();
+    }
+
+    // =========================
+    // VISUALS
+    // =========================
+    void UpdateCropsVisual()
     {
         foreach (var crop in crops.Values)
         {
@@ -99,14 +120,23 @@ public class PlayerFarming : MonoBehaviour
                     cropTilemap.SetTile(crop.cell, crop.data.grownTile);
                     break;
             }
+
+            if (crop.IsWatered)
+            soilTilemap.SetTile(crop.cell, wetSoilTile);
+            else
+            soilTilemap.SetTile(crop.cell, tilledSoilTile);
         }
     }
 
+    // =========================
+    // HARVEST
+    // =========================
     void HarvestCrop(Vector3Int cell, CropInstance crop)
     {
         cropTilemap.SetTile(cell, null);
         crops.Remove(cell);
-
+        wateredSoil.Remove(cell);
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.harvestSound);
         Vector3 worldPos =
             cropTilemap.CellToWorld(cell) +
             cropTilemap.cellSize / 2f +
