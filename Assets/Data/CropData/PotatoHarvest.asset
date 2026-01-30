@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Potato
   icon: {fileID: 839729315, guid: 6281b25e186a1a44d9bd70376afad50d, type: 3}
-  type: 1
+  type: 5
   stackable: 1
   maxStack: 99
+  sellPrice: 10
+  buyPrice: 20
+  canBeCrafted: 1
+  recipes: []

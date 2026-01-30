@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9e818d2c5877d094186aea8cf06e41f3, type: 3}
-  m_Name: RadishHarvest
+  m_Name: BakedPotato
   m_EditorClassIdentifier: 
-  itemName: Radish
-  icon: {fileID: 143101622, guid: 6281b25e186a1a44d9bd70376afad50d, type: 3}
-  type: 5
+  itemName: Baked Potato
+  icon: {fileID: 1771815994, guid: 6281b25e186a1a44d9bd70376afad50d, type: 3}
+  type: 4
   stackable: 1
   maxStack: 99
   sellPrice: 10
   buyPrice: 20
-  canBeCrafted: 1
+  canBeCrafted: 0
   recipes: []
