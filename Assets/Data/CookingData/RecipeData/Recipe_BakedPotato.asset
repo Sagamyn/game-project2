@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d240db16b946cce41b47aa9613305b59, type: 3}
+  m_Name: Recipe_BakedPotato
+  m_EditorClassIdentifier: 
+  recipeName: Baked Potato
+  recipeIcon: {fileID: 264915479, guid: 28a347fd653468947a8199ed36cca958, type: 3}
+  ingredients:
+  - ingredient: {fileID: 11400000, guid: e45ab59f7c64d3d4ea99d3f3aef80fce, type: 2}
+    amount: 1
+  resultItem: {fileID: 11400000, guid: 8f2f475ee9b750145a504ad9f115d6e5, type: 2}
+  resultAmount: 1
+  cookingTime: 3
+  experienceGained: 10
+  description: A great baked potato sooo tastay!!
