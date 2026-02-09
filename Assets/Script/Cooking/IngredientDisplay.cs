@@ -7,12 +7,15 @@ public class IngredientDisplay : MonoBehaviour
     [Header("UI Elements")]
     public Image ingredientIcon;
     public TextMeshProUGUI ingredientName;
-    public TextMeshProUGUI amountText; // Shows "3/5" format
+    public TextMeshProUGUI amountText;
+    public Image statusIcon; // NEW - checkmark or X
     public Image background;
 
     [Header("Colors")]
-    public Color hasEnoughColor = Color.white;
-    public Color notEnoughColor = Color.red;
+    public Color hasEnoughColor = new Color(0.3f, 0.8f, 0.3f, 1f); // Green
+    public Color notEnoughColor = new Color(0.8f, 0.3f, 0.3f, 1f); // Red
+    public Color backgroundHasColor = new Color(0.2f, 0.5f, 0.2f, 0.3f); // Green tint
+    public Color backgroundNeedColor = new Color(0.5f, 0.2f, 0.2f, 0.3f); // Red tint
 
     public void Setup(ItemData ingredient, int required, int has)
     {
@@ -24,18 +27,26 @@ public class IngredientDisplay : MonoBehaviour
 
         bool hasEnough = has >= required;
 
+        // Update amount text with color
         if (amountText != null)
         {
             amountText.text = $"{has}/{required}";
             amountText.color = hasEnough ? hasEnoughColor : notEnoughColor;
         }
 
-        // Optional: color the background
+        // Update status icon
+        if (statusIcon != null)
+        {
+            statusIcon.color = hasEnough ? hasEnoughColor : notEnoughColor;
+            statusIcon.enabled = true; // Always show
+            // Optional: Change sprite based on status
+            // statusIcon.sprite = hasEnough ? checkmarkSprite : xMarkSprite;
+        }
+
+        // Update background color based on status
         if (background != null)
         {
-            Color bgColor = background.color;
-            bgColor.a = hasEnough ? 0.3f : 0.5f;
-            background.color = bgColor;
+            background.color = hasEnough ? backgroundHasColor : backgroundNeedColor;
         }
     }
 }

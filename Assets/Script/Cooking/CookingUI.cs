@@ -25,7 +25,6 @@ public class CookingUI : MonoBehaviour
 
     [Header("Cooking Progress")]
     public GameObject cookingProgressPanel;
-    public Image progressBar;
     public TextMeshProUGUI progressText;
 
     private CookingStation currentStation;
@@ -127,36 +126,58 @@ public class CookingUI : MonoBehaviour
         if (recipeDetailsPanel != null)
             recipeDetailsPanel.SetActive(true);
 
+        Debug.Log($"Showing recipe details for: {recipe.recipeName}");
+
         // Show recipe info
         if (recipeIcon != null)
+        {
             recipeIcon.sprite = recipe.recipeIcon;
+            recipeIcon.enabled = true;
+        }
 
         if (recipeName != null)
+        {
             recipeName.text = recipe.recipeName;
+            recipeName.gameObject.SetActive(true);
+        }
 
         if (recipeDescription != null)
+        {
             recipeDescription.text = recipe.description;
+            recipeDescription.gameObject.SetActive(true);
+        }
 
-        // Show ingredients
+        // Clear old ingredients
         foreach (Transform child in ingredientsListParent)
         {
             Destroy(child.gameObject);
         }
 
+        Debug.Log($"Creating {recipe.ingredients.Length} ingredient displays");
+
+        // Show new ingredients
         foreach (var ing in recipe.ingredients)
         {
             IngredientDisplay display = Instantiate(ingredientDisplayPrefab, ingredientsListParent);
             int has = playerInventory.GetAmount(ing.ingredient);
             display.Setup(ing.ingredient, ing.amount, has);
+            display.gameObject.SetActive(true); // Make sure it's active
         }
+
+        // Force layout rebuild
+        Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(ingredientsListParent.GetComponent<RectTransform>());
 
         // Update cook button
         bool canCraft = recipe.CanCraft(playerInventory);
         if (cookButton != null)
         {
+            cookButton.gameObject.SetActive(true); // Make sure it's visible
             cookButton.interactable = canCraft && !currentStation.IsCooking();
             cookButton.onClick.RemoveAllListeners();
             cookButton.onClick.AddListener(() => OnCookButtonClicked());
+            
+            Debug.Log($"Cook button: Active={cookButton.gameObject.activeSelf}, Interactable={cookButton.interactable}");
         }
     }
 
@@ -182,37 +203,48 @@ public class CookingUI : MonoBehaviour
         if (cookingProgressPanel != null)
         {
             cookingProgressPanel.SetActive(true);
-            StartCoroutine(UpdateProgressBar(duration));
         }
+
+        if (progressText != null)
+        {
+            progressText.text = "Cooking... 0%";
+        }
+
+        // Start progress animation
+        StartCoroutine(UpdateProgressText(duration));
 
         // Disable cook button while cooking
         if (cookButton != null)
             cookButton.interactable = false;
+
+        Debug.Log($"Started cooking progress for {duration} seconds");
     }
 
-    IEnumerator UpdateProgressBar(float duration)
+    IEnumerator UpdateProgressText(float duration)
     {
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float progress = elapsed / duration;
-
-            if (progressBar != null)
-                progressBar.fillAmount = progress;
+            float progress = Mathf.Clamp01(elapsed / duration);
+            int percentage = Mathf.RoundToInt(progress * 100);
 
             if (progressText != null)
-                progressText.text = $"Cooking... {Mathf.RoundToInt(progress * 100)}%";
+            {
+                progressText.text = $"Cooking... {percentage}%";
+            }
 
             yield return null;
         }
 
-        if (progressBar != null)
-            progressBar.fillAmount = 1f;
-
+        // Final state
         if (progressText != null)
-            progressText.text = "Done!";
+        {
+            progressText.text = "Done! 100%";
+        }
+
+        yield return new WaitForSeconds(0.5f); // Show "Done" briefly
     }
 
     public void OnCookingComplete(bool success)

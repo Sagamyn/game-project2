@@ -7,6 +7,7 @@ public class RecipeButton : MonoBehaviour
     [Header("UI Elements")]
     public Image recipeIcon;
     public TextMeshProUGUI recipeName;
+    public TextMeshProUGUI cookingTimeText; // NEW
     public GameObject canCraftIndicator;
     public GameObject lockedOverlay;
     public Button button;
@@ -24,6 +25,9 @@ public class RecipeButton : MonoBehaviour
 
         if (recipeName != null)
             recipeName.text = recipe.recipeName;
+
+        if (cookingTimeText != null)
+            cookingTimeText.text = $"⏱ {recipe.cookingTime}s";
 
         if (button != null)
         {
