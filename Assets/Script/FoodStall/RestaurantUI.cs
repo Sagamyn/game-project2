@@ -23,6 +23,7 @@ public class RestaurantUI : MonoBehaviour
     public Transform ordersListParent;
     public OrderItemUI orderItemPrefab;
     public TextMeshProUGUI statsText;
+    public Button closeRestaurantButton; // NEW
 
     private Restaurant currentRestaurant;
     private bool isOpen = false;
@@ -37,6 +38,10 @@ public class RestaurantUI : MonoBehaviour
 
         if (openRestaurantButton != null)
             openRestaurantButton.onClick.AddListener(OnOpenRestaurantClicked);
+            
+        // NEW: Setup close button
+        if (closeRestaurantButton != null)
+            closeRestaurantButton.onClick.AddListener(OnCloseRestaurantClicked);
     }
 
     public void OpenMenuSetup(Restaurant restaurant)
@@ -93,6 +98,10 @@ public class RestaurantUI : MonoBehaviour
 
         if (ordersPanel != null)
             ordersPanel.SetActive(true);
+
+        // Show/hide close button
+        if (closeRestaurantButton != null)
+            closeRestaurantButton.gameObject.SetActive(true);
 
         // Populate orders
         PopulateOrdersList(orders);
@@ -221,6 +230,15 @@ public class RestaurantUI : MonoBehaviour
         if (currentRestaurant != null)
         {
             currentRestaurant.StartRestaurant();
+        }
+    }
+
+    // NEW: Close restaurant button handler
+    void OnCloseRestaurantClicked()
+    {
+        if (currentRestaurant != null)
+        {
+            currentRestaurant.CloseRestaurant();
         }
     }
 

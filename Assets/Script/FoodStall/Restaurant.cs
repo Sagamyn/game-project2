@@ -89,7 +89,7 @@ public class Restaurant : Interactable
         state = RestaurantState.Open;
         isOpen = true;
 
-        Debug.Log("🍽️ Restaurant is now OPEN!");
+        Debug.Log(" Restaurant is now OPEN!");
 
         // Start spawning customers
         if (customerSpawner == null)
@@ -104,32 +104,51 @@ public class Restaurant : Interactable
 
     public void CloseRestaurant()
     {
+        Debug.Log(" Starting restaurant closure...");
+        
         state = RestaurantState.Closed;
         isOpen = false;
 
-        Debug.Log("🔒 Restaurant is now CLOSED");
-
-        // Stop spawning
+        // Stop spawning NEW customers
         if (customerSpawner != null)
         {
             StopCoroutine(customerSpawner);
             customerSpawner = null;
+            Debug.Log("✓ Stopped customer spawning");
         }
 
-        // Clear all customers
-        foreach (var customer in activeCustomers)
+        // Get count before clearing
+        int customerCount = activeCustomers.Count;
+        Debug.Log($" Found {customerCount} active customers to remove");
+
+        // Make all EXISTING customers leave
+        // Use a copy of the list to avoid modification during iteration
+        List<CustomerNPC> customersSnapshot = new List<CustomerNPC>(activeCustomers);
+        
+        foreach (var customer in customersSnapshot)
         {
             if (customer != null)
-                Destroy(customer.gameObject);
+            {
+                Debug.Log($" Telling {customer.customerName} to leave...");
+                customer.LeaveImmediately();
+            }
         }
+
+        // Clear lists immediately (customers will handle their own cleanup)
         activeCustomers.Clear();
         activeOrders.Clear();
+        Debug.Log("✓ Cleared customer lists");
 
         // Clear menu
         menu.ClearMenu();
 
+        // Close UI
         if (restaurantUI != null)
             restaurantUI.Close();
+            
+        PlayerMovement.Instance?.LockMovement(false);
+        
+        Debug.Log(" Restaurant CLOSED successfully");
     }
 
     void OpenOrdersPanel()
@@ -179,14 +198,14 @@ public class Restaurant : Interactable
         activeCustomers.Add(customer);
         activeOrders.Add(customer.currentOrder);
 
-        Debug.Log($"Customer spawned! Ordered: {menuItem.food.itemName}");
+        Debug.Log($"✓ Customer spawned! Ordered: {menuItem.food.itemName}");
     }
 
     Transform GetAvailableSeat()
     {
         foreach (var seat in seatPositions)
         {
-            bool occupied = activeCustomers.Exists(c => c.seatPosition == seat);
+            bool occupied = activeCustomers.Exists(c => c != null && c.seatPosition == seat);
             if (!occupied)
                 return seat;
         }
@@ -201,7 +220,7 @@ public class Restaurant : Interactable
     public void ServeOrder(CustomerOrder order)
     {
         // Find customer with this order
-        CustomerNPC customer = activeCustomers.Find(c => c.currentOrder.orderId == order.orderId);
+        CustomerNPC customer = activeCustomers.Find(c => c != null && c.currentOrder.orderId == order.orderId);
         if (customer == null)
         {
             Debug.LogError("Customer not found!");
@@ -221,11 +240,13 @@ public class Restaurant : Interactable
         // Give to customer
         customer.ReceiveFood(order.orderedFood);
 
-        Debug.Log($"Served {order.orderedFood.itemName} to customer!");
+        Debug.Log($"✓ Served {order.orderedFood.itemName} to customer!");
     }
 
     public void OnCustomerLeft(CustomerNPC customer, bool paid)
     {
+        if (customer == null) return;
+        
         if (paid)
         {
             // Give money to player
@@ -233,15 +254,18 @@ public class Restaurant : Interactable
             customersServed++;
             totalEarnings += customer.currentOrder.price;
 
-            Debug.Log($"💰 Earned ${customer.currentOrder.price}! Total: ${totalEarnings}");
+            Debug.Log($" Earned ${customer.currentOrder.price}! Total: ${totalEarnings}");
         }
         else
         {
-            Debug.LogWarning("Customer left without paying!");
+            Debug.LogWarning($"❌ {customer.customerName} left without paying!");
         }
 
         // Remove from lists
         activeCustomers.Remove(customer);
-        activeOrders.Remove(customer.currentOrder);
+        if (customer.currentOrder != null)
+            activeOrders.Remove(customer.currentOrder);
+            
+        Debug.Log($" Customers remaining: {activeCustomers.Count}");
     }
 }
