@@ -2809,7 +2809,11 @@ TextureImporter:
       pivot: {x: 0.49002838, y: 0.20869279}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
-      physicsShape: []
+      physicsShape:
+      - - {x: -7, y: -15}
+        - {x: -7, y: -9}
+        - {x: 7, y: -9}
+        - {x: 7, y: -15}
       tessellationDetail: 0
       bones: []
       spriteID: f05e9fa7870811144872315b3568440d

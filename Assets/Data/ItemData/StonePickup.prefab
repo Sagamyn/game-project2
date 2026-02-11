@@ -100,8 +100,8 @@ Rigidbody2D:
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
   m_Mass: 1
-  m_LinearDrag: 5
-  m_AngularDrag: 5
+  m_LinearDrag: 7
+  m_AngularDrag: 7
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -128,6 +128,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: 14c11576289f2c34384939e3b2986540, type: 2}
   amount: 1
+  pickupDelay: 1
 --- !u!58 &555067093701570195
 CircleCollider2D:
   m_ObjectHideFlags: 0
