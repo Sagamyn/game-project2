@@ -21,6 +21,15 @@ public class PlayerFarming : MonoBehaviour
     [Header("Selected Item (from Hotbar)")]
     public ItemData selectedItem;
 
+    [Header("Farming Zones")]
+    public bool requireZone = true;
+    public bool showZoneWarning = true;
+    private FarmingZone currentZone;
+    
+    // Cooldown to prevent dialogue spam
+    private float lastWarningTime = 0f;
+    private float warningCooldown = 2f; // Only show warning once every 2 seconds
+
     // Crops planted on the field
     Dictionary<Vector3Int, CropInstance> crops = new();
 
@@ -38,23 +47,112 @@ public class PlayerFarming : MonoBehaviour
     }
 
     // =========================
+    // ZONE MANAGEMENT
+    // =========================
+    public void EnterFarmingZone(FarmingZone zone)
+    {
+        currentZone = zone;
+        Debug.Log($"✓ ENTERED FARMING ZONE: {zone.zoneName}");
+    }
+
+    public void ExitFarmingZone(FarmingZone zone)
+    {
+        if (currentZone == zone)
+        {
+            currentZone = null;
+            Debug.Log($"✗ EXITED FARMING ZONE: {zone.zoneName}");
+        }
+    }
+
+    // Check if player can perform action at target cell
+    bool CanFarmAtCell(Vector3Int cell, FarmingAction action)
+    {
+        // If zones are not required, allow anywhere
+        if (!requireZone)
+        {
+            return true;
+        }
+
+        // If zones are required but player is not in any zone
+        if (currentZone == null)
+        {
+            ShowWarningMessage("You can't farm here! Find a farming zone.");
+            return false;
+        }
+
+        // Check if the TARGET CELL is within the zone bounds
+        if (!currentZone.IsCellInZone(cell))
+        {
+            ShowWarningMessage("You can't till the soil here!");
+            return false;
+        }
+
+        // Check if this specific action is allowed in this zone
+        if (!currentZone.IsActionAllowed(action))
+        {
+            ShowWarningMessage($"{action} is not allowed in this zone!");
+            return false;
+        }
+
+        return true;
+    }
+
+    // Show warning with cooldown to prevent spam
+    void ShowWarningMessage(string message)
+    {
+        if (!showZoneWarning) return;
+
+        // Check cooldown
+        if (Time.time - lastWarningTime < warningCooldown)
+        {
+            Debug.Log($"Warning suppressed (cooldown): {message}");
+            return;
+        }
+
+        lastWarningTime = Time.time;
+        Debug.LogWarning(message);
+
+        if (dialogueManager != null)
+        {
+            dialogueManager.ShowDialogue(message);
+        }
+    }
+
+    // =========================
     // FARM ACTION
     // =========================
     public void TryFarm()
     {
-        if (dialogueManager != null && dialogueManager.IsOpen) return;
-        if (playerInteraction != null && playerInteraction.HasInteractable) return;
-        if (indicator == null) return;
+        // CRITICAL: Don't allow farming if dialogue is open
+        if (dialogueManager != null && dialogueManager.IsOpen)
+        {
+            Debug.Log("TryFarm blocked - dialogue is open");
+            return;
+        }
 
-        Vector3Int cell =
-            soilTilemap.WorldToCell(indicator.transform.position);
+        if (playerInteraction != null && playerInteraction.HasInteractable)
+        {
+            Debug.Log("TryFarm blocked - has interactable");
+            return;
+        }
 
+        if (indicator == null)
+        {
+            Debug.LogWarning("TryFarm blocked - no indicator");
+            return;
+        }
+
+        Vector3Int cell = soilTilemap.WorldToCell(indicator.transform.position);
         TileBase soilTile = soilTilemap.GetTile(cell);
         TileBase cropTile = cropTilemap.GetTile(cell);
 
-        //  PLANT
+        // PLANT
         if (soilTile != null && cropTile == null)
         {
+            // Check if can plant in this zone
+            if (!CanFarmAtCell(cell, FarmingAction.Planting))
+                return;
+
             if (selectedItem is not SeedItem seedItem)
                 return;
 
@@ -69,7 +167,6 @@ public class PlayerFarming : MonoBehaviour
             cropTilemap.SetTile(cell, data.seedTile);
             inventory.ConsumeItem(seedItem, 1);
             AudioManager.Instance.PlaySFX(AudioManager.Instance.plantSound);
-            // New crop starts dry
             wateredSoil[cell] = false;
             return;
         }
@@ -77,6 +174,10 @@ public class PlayerFarming : MonoBehaviour
         // HARVEST
         if (cropTile != null && crops.ContainsKey(cell))
         {
+            // Check if can harvest in this zone
+            if (!CanFarmAtCell(cell, FarmingAction.Harvesting))
+                return;
+
             CropInstance crop = crops[cell];
             if (crop.CanHarvest)
                 HarvestCrop(cell, crop);
@@ -93,6 +194,10 @@ public class PlayerFarming : MonoBehaviour
 
     public void WaterCrop(Vector3Int cell)
     {
+        // Check if can water in this zone
+        if (!CanFarmAtCell(cell, FarmingAction.Watering))
+            return;
+
         if (!crops.ContainsKey(cell))
             return;
 
@@ -122,9 +227,9 @@ public class PlayerFarming : MonoBehaviour
             }
 
             if (crop.IsWatered)
-            soilTilemap.SetTile(crop.cell, wetSoilTile);
+                soilTilemap.SetTile(crop.cell, wetSoilTile);
             else
-            soilTilemap.SetTile(crop.cell, tilledSoilTile);
+                soilTilemap.SetTile(crop.cell, tilledSoilTile);
         }
     }
 
@@ -137,6 +242,7 @@ public class PlayerFarming : MonoBehaviour
         crops.Remove(cell);
         wateredSoil.Remove(cell);
         AudioManager.Instance.PlaySFX(AudioManager.Instance.harvestSound);
+        
         Vector3 worldPos =
             cropTilemap.CellToWorld(cell) +
             cropTilemap.cellSize / 2f +
@@ -185,5 +291,24 @@ public class PlayerFarming : MonoBehaviour
 
             Destroy(item, data.harvestDespawnTime);
         }
+    }
+
+    // =========================
+    // PUBLIC HELPERS
+    // =========================
+    
+    public bool IsInFarmingZone()
+    {
+        return currentZone != null;
+    }
+
+    public string GetCurrentZoneName()
+    {
+        return currentZone != null ? currentZone.zoneName : "None";
+    }
+
+    public bool CanPerformAction(Vector3Int cell, FarmingAction action)
+    {
+        return CanFarmAtCell(cell, action);
     }
 }
