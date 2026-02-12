@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -7,12 +8,14 @@ public class InventoryUI : MonoBehaviour
     public PlayerInventory inventory;
     public PlayerMovement playerMovement;
     public PlayerFarming playerFarming;
+    public PlayerMoney playerMoney;
 
     [Header("UI Setup")]
     public InventorySlotUI slotPrefab;
     public Transform gridParent;
     public Hotbar hotbar;
     public GameObject panel;
+    public TMP_Text moneyText;
     public UIAnimator uiAnimator; // Optional: for animations
 
     private List<InventorySlotUI> slotUIList = new List<InventorySlotUI>();
@@ -21,11 +24,15 @@ public class InventoryUI : MonoBehaviour
 
     void Start()
     {
+ 
         // Subscribe to inventory changes
         if (inventory != null)
         {
             inventory.OnInventoryChanged += Refresh;
         }
+
+        if (playerMoney != null)
+        playerMoney.OnMoneyChanged += UpdateMoneyDisplay;
 
         // Create all slots once at start
         CreateSlots();
@@ -44,6 +51,9 @@ public class InventoryUI : MonoBehaviour
 
         // Initial refresh
         Refresh();
+
+        if (playerMoney != null)
+        UpdateMoneyDisplay(playerMoney.CurrentMoney);
     }
 
     void OnDestroy()
@@ -52,6 +62,11 @@ public class InventoryUI : MonoBehaviour
         {
             inventory.OnInventoryChanged -= Refresh;
         }
+
+        if (playerMoney != null)
+        {
+            playerMoney.OnMoneyChanged -= UpdateMoneyDisplay;
+        }   
     }
 
     void Update()
@@ -240,5 +255,13 @@ public class InventoryUI : MonoBehaviour
 
         if (playerFarming != null)
             playerFarming.selectedItem = item;
+    }
+
+    void UpdateMoneyDisplay(int money)
+    {
+        if (moneyText != null)
+        {
+            moneyText.text = money.ToString();
+        }
     }
 }
