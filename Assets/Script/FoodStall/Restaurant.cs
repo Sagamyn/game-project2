@@ -58,6 +58,10 @@ public class Restaurant : Interactable
         {
             OpenMenuSetup();
         }
+        else if (state == RestaurantState.Closed || state == RestaurantState.MenuSetup)
+        {
+            CloseMenuSetup();
+        }
         else if (state == RestaurantState.Open)
         {
             OpenOrdersPanel();
@@ -76,6 +80,16 @@ public class Restaurant : Interactable
         restaurantUI.OpenMenuSetup(this);
 
         PlayerMovement.Instance?.LockMovement(true);
+    }
+
+    void CloseMenuSetup()
+    {
+        if (restaurantUI == null) return;
+
+        state = RestaurantState.Closed;
+        restaurantUI.Close();
+
+        PlayerMovement.Instance?.LockMovement(false);
     }
 
     public void StartRestaurant()
