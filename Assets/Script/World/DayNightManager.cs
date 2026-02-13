@@ -35,8 +35,20 @@ public class DayNightManager : MonoBehaviour
     public UnityEvent onDayStart;
     public UnityEvent onNightStart;
     
-    // Event that other scripts can subscribe to
-    public event Action<int> OnNewDay;
+    [Header("Sleep Settings")]
+    [Tooltip("Force player to sleep at this time")]
+    public bool requireSleep = true;
+    public float sleepTime = 23f; // 11 PM
+    
+    [Tooltip("Freeze time when sleep is required")]
+    public bool freezeTimeAtSleepHour = true;
+    
+    private bool waitingForSleep = false;
+    private bool timeIsFrozen = false;
+    
+    // Events
+    public event System.Action<int> OnNewDay;
+    public event System.Action OnSleepRequired; // New event for sleep requirement
     
     private int lastDay = 0;
     private bool wasNight = false;
@@ -70,20 +82,41 @@ public class DayNightManager : MonoBehaviour
 
     void AdvanceTime(float deltaTime)
     {
+        // Check if time should freeze
+        if (freezeTimeAtSleepHour && requireSleep && currentTime >= sleepTime && !timeIsFrozen)
+        {
+            currentTime = sleepTime; // Lock at sleep time
+            timeIsFrozen = true;
+            waitingForSleep = true;
+            
+            Debug.Log($"⏰ Time frozen at {sleepTime}:00 - Player must sleep!");
+            OnSleepRequired?.Invoke();
+            return;
+        }
+        
+        // Don't advance time if frozen
+        if (timeIsFrozen) return;
+        
         // Convert real seconds to game hours
         float hoursPerSecond = 24f / dayLengthInSeconds;
         currentTime += hoursPerSecond * deltaTime;
         
-        // Wrap to next day at midnight
+        // Wrap to next day at midnight (BUT don't increment day yet - sleep does that)
         if (currentTime >= 24f)
         {
             currentTime = 0f;
-            currentDay++;
+            // Don't increment day here if sleep is required
+            if (!requireSleep)
+            {
+                currentDay++;
+            }
         }
     }
 
     void CheckForNewDay()
     {
+        // Only trigger event when day actually changes
+        // Don't increment here - that's done in sleep or time wrap
         if (currentDay > lastDay)
         {
             Debug.Log($"=== NEW DAY: {currentDay} ===");
@@ -183,6 +216,26 @@ public class DayNightManager : MonoBehaviour
         currentTime = 20f;
     }
 
+    // Called when player goes to sleep
+    public void PlayerGoesToSleep()
+    {
+        Debug.Log("💤 Player is sleeping...");
+        
+        // Advance to next day
+        currentDay++;
+        currentTime = 6f; // Wake up at 6 AM
+        
+        // Unfreeze time
+        timeIsFrozen = false;
+        waitingForSleep = false;
+        
+        Debug.Log($"☀️ Good morning! It's Day {currentDay}");
+        
+        // Trigger new day event
+        OnNewDay?.Invoke(currentDay);
+        onDayStart?.Invoke();
+    }
+
     // Public getters
     public bool IsDaytime()
     {
@@ -214,6 +267,11 @@ public class DayNightManager : MonoBehaviour
         
         string timeText = $"{GetDayString()}\n{GetTimeString()}\n{(IsDaytime() ? "☀️ Day" : "🌙 Night")}";
         
-        GUI.Label(new Rect(Screen.width - 200, 10, 190, 100), timeText, style);
+        if (waitingForSleep)
+        {
+            timeText += "\n⏰ TIME TO SLEEP!";
+        }
+        
+        GUI.Label(new Rect(Screen.width - 200, 10, 190, 120), timeText, style);
     }
 }

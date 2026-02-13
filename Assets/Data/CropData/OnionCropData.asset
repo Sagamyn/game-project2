@@ -12,15 +12,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3cc05072ca6b6f469edb3225d4eebc2, type: 3}
   m_Name: OnionCropData
   m_EditorClassIdentifier: 
-  seedTile: {fileID: 11400000, guid: 3b52e8b7bec79e349b2d6094a5c89c47, type: 2}
-  sproutTile: {fileID: 11400000, guid: a5f47a6360601ff4e90ce2e7381473b1, type: 2}
-  grownTile: {fileID: 11400000, guid: d2584716553e92c4e9d801122fab7af0, type: 2}
-  seedTime: 5
-  sproutTime: 5
-  harvestItem: {fileID: 11400000, guid: 18c974261269fcc4b8b6e2cc69f1b874, type: 2}
+  cropName: Carrot
+  cropIcon: {fileID: 0}
+  growthStages:
+  - stageName: Seed
+    stageTile: {fileID: 11400000, guid: 3b52e8b7bec79e349b2d6094a5c89c47, type: 2}
+    timeToNextStage: 1
+    requiresWaterThisStage: 1
+  - stageName: Sprout
+    stageTile: {fileID: 11400000, guid: 8602689739ef95a4a9dde7370f4ed83b, type: 2}
+    timeToNextStage: 1
+    requiresWaterThisStage: 1
+  - stageName: Lil Sprout
+    stageTile: {fileID: 11400000, guid: 5b589a63e6a86844ea673bc18fbf3521, type: 2}
+    timeToNextStage: 1
+    requiresWaterThisStage: 1
+  - stageName: base
+    stageTile: {fileID: 11400000, guid: a5f47a6360601ff4e90ce2e7381473b1, type: 2}
+    timeToNextStage: 1
+    requiresWaterThisStage: 1
+  - stageName: Harvest
+    stageTile: {fileID: 11400000, guid: d2584716553e92c4e9d801122fab7af0, type: 2}
+    timeToNextStage: 0
+    requiresWaterThisStage: 0
   harvestPrefab: {fileID: 3238750535084947364, guid: 73916eacfb040f241b288ae1e89597d7, type: 3}
   minHarvestAmount: 1
   maxHarvestAmount: 3
   burstForce: 3
   burstTorque: 6
   harvestDespawnTime: 10
+  requiresWater: 1
+  seasonDependent: 0
