@@ -53,7 +53,7 @@ TagManager:
   - name: Item
     uniqueID: 1465934011
     locked: 0
-  - name: AbovePlayer
+  - name: Effect
     uniqueID: 2117114325
     locked: 0
   - name: UI
