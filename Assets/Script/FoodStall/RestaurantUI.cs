@@ -242,6 +242,20 @@ public class RestaurantUI : MonoBehaviour
         }
     }
 
+    public bool IsOpen()
+{
+    // Check if any panel is active
+    if (menuSetupPanel != null && menuSetupPanel.activeSelf)
+        return true;
+    
+    if (ordersPanel != null && ordersPanel.activeSelf)
+        return true;
+    
+    // Add any other panels you have here
+    
+    return false;
+}
+
     public void ServeOrder(CustomerOrder order)
     {
         if (currentRestaurant != null)

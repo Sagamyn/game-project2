@@ -182,6 +182,13 @@ public class WeatherManager : MonoBehaviour
     // Called when new day starts (day-based weather)
     void OnNewDay(int day)
     {
+        // Prevent processing same day twice
+        if (currentDay == day)
+        {
+            Debug.Log($"Weather: Day {day} already processed, skipping");
+            return;
+        }
+        
         currentDay = day;
         
         if (weatherChangesDaily && enableRandomWeather)

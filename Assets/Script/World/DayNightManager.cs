@@ -52,6 +52,8 @@ public class DayNightManager : MonoBehaviour
     
     private int lastDay = 0;
     private bool wasNight = false;
+    private bool isSleeping = false; // Prevent day checks during sleep
+    private bool isProcessingSleep = false; // Prevent multiple sleep calls
 
     void Start()
     {
@@ -115,8 +117,17 @@ public class DayNightManager : MonoBehaviour
 
     void CheckForNewDay()
     {
+        // If sleep is required, ONLY sleep advances days - skip this check entirely
+        if (requireSleep)
+        {
+            return;
+        }
+        
+        // Don't check during sleep transition
+        if (isSleeping) return;
+        
         // Only trigger event when day actually changes
-        // Don't increment here - that's done in sleep or time wrap
+        // This is only used when sleep is NOT required
         if (currentDay > lastDay)
         {
             Debug.Log($"=== NEW DAY: {currentDay} ===");
@@ -219,7 +230,19 @@ public class DayNightManager : MonoBehaviour
     // Called when player goes to sleep
     public void PlayerGoesToSleep()
     {
+        // Prevent multiple simultaneous calls
+        if (isProcessingSleep)
+        {
+            Debug.LogWarning("Already processing sleep, ignoring duplicate call");
+            return;
+        }
+        
+        isProcessingSleep = true;
+        
         Debug.Log("💤 Player is sleeping...");
+        
+        // Set sleeping flag to prevent CheckForNewDay from running
+        isSleeping = true;
         
         // Advance to next day
         currentDay++;
@@ -229,11 +252,32 @@ public class DayNightManager : MonoBehaviour
         timeIsFrozen = false;
         waitingForSleep = false;
         
+        // Update lastDay BEFORE triggering event to prevent double-trigger
+        lastDay = currentDay;
+        
         Debug.Log($"☀️ Good morning! It's Day {currentDay}");
         
-        // Trigger new day event
+        // Trigger new day event (only once!)
         OnNewDay?.Invoke(currentDay);
         onDayStart?.Invoke();
+        
+        // Wait one frame before clearing sleeping flag
+        StartCoroutine(ClearSleepingFlag());
+    }
+
+    System.Collections.IEnumerator ClearSleepingFlag()
+    {
+        // Wait for end of frame
+        yield return new WaitForEndOfFrame();
+        
+        // Wait one more frame to be absolutely sure
+        yield return null;
+        
+        // Clear the flags
+        isSleeping = false;
+        isProcessingSleep = false;
+        
+        Debug.Log("✓ Sleep flags cleared, day checks re-enabled");
     }
 
     // Public getters
