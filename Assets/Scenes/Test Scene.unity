@@ -309,7 +309,7 @@ MonoBehaviour:
   playerInventory: {fileID: 1730039564}
   playerMoney: {fileID: 1730039570}
   customerPrefab: {fileID: 7571096861022670369, guid: 4562e0761ef837b42b992e442a844ce3, type: 3}
-  spawnPoint: {fileID: 1143690666397200038, guid: 4562e0761ef837b42b992e442a844ce3, type: 3}
+  spawnPoint: {fileID: 1782413925}
   seatPositions:
   - {fileID: 1368983495}
   - {fileID: 1646170985}
@@ -669,7 +669,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &155992260
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -686,7 +686,7 @@ MonoBehaviour:
   player: {fileID: 1730039553}
   playerAnimator: {fileID: 1730039551}
   feetOffset: {x: 0, y: -0.25}
-  showOnlyWhenPressE: 1
+  showOnlyWhenPressE: 0
 --- !u!212 &155992261
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -27877,16 +27877,21 @@ MonoBehaviour:
   rainSound: {fileID: 0}
   rainAudioSource: {fileID: 0}
   rainVolume: 0.5
+  weatherChangesDaily: 1
+  useTimeBased: 0
   minRainDuration: 30
   maxRainDuration: 120
   minClearDuration: 10
   maxClearDuration: 60
   enableRandomWeather: 1
-  rainChance: 1
+  rainChance: 0.5
   rainWatersCrops: 1
   wateringInterval: 2
+  hideRainIndoors: 1
+  keepSoundIndoors: 1
+  indoorSoundVolume: 0.3
   darkenDuringRain: 1
-  rainDarkenAmount: 0.355
+  rainDarkenAmount: 0.5
   mainCamera: {fileID: 519420031}
 --- !u!4 &982441565
 Transform:
@@ -31618,6 +31623,7 @@ GameObject:
   - component: {fileID: 1730039567}
   - component: {fileID: 1730039568}
   - component: {fileID: 1730039570}
+  - component: {fileID: 1730039571}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -32065,6 +32071,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentMoney: 100
+--- !u!114 &1730039571
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1730039550}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d2abd316ed2c7d499ea558048fb8af5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  indicator: {fileID: 155992260}
+  playerFarming: {fileID: 1730039561}
+  showForHoe: 1
+  showForWateringCan: 1
+  showForShovel: 1
+  showForSeeds: 1
+  stayVisibleWhileEquipped: 1
 --- !u!1 &1732368573
 GameObject:
   m_ObjectHideFlags: 0
