@@ -134,34 +134,50 @@ public class InventorySlotUI : MonoBehaviour,
         // Make original transparent
         canvasGroup.alpha = 0.4f;
 
-        Debug.Log($"Started dragging: {item.itemName} from {owner} slot {slotIndex}");
+        Debug.Log($"✓ Started dragging: {item.itemName} from {owner} slot {slotIndex}");
     }
 
     void CreateDragVisual()
     {
+        // Clean up any existing drag visual
+        if (dragVisualObject != null)
+        {
+            Destroy(dragVisualObject);
+        }
+
         dragVisualObject = new GameObject("DragVisual");
         Canvas rootCanvas = GetComponentInParent<Canvas>();
         dragVisualObject.transform.SetParent(rootCanvas.transform);
-        dragVisualObject.transform.SetAsLastSibling();
+        dragVisualObject.transform.SetAsLastSibling(); // Render on top
 
         RectTransform dragRect = dragVisualObject.AddComponent<RectTransform>();
         dragRect.sizeDelta = rectTransform.sizeDelta;
+        dragRect.localScale = Vector3.one; // IMPORTANT!
+        
+        // Set initial position to mouse
+        dragRect.position = Input.mousePosition;
 
         CanvasGroup dragCG = dragVisualObject.AddComponent<CanvasGroup>();
-        dragCG.blocksRaycasts = false;
-        dragCG.alpha = 0.8f;
+        dragCG.blocksRaycasts = false; // Don't block raycasts
+        dragCG.alpha = 0.9f;
+
+        // Background (makes it visible!)
+        Image bgImage = dragVisualObject.AddComponent<Image>();
+        bgImage.color = new Color(0.2f, 0.2f, 0.2f, 0.8f); // Dark background
+        bgImage.raycastTarget = false;
 
         // Icon
         GameObject iconObj = new GameObject("Icon");
-        iconObj.transform.SetParent(dragVisualObject.transform);
+        iconObj.transform.SetParent(dragVisualObject.transform, false); // worldPositionStays = false!
         Image dragIcon = iconObj.AddComponent<Image>();
         dragIcon.sprite = item.icon;
         dragIcon.color = Color.white;
+        dragIcon.raycastTarget = false;
         
         RectTransform iconRect = iconObj.GetComponent<RectTransform>();
-        iconRect.sizeDelta = icon.rectTransform.sizeDelta;
-        iconRect.anchorMin = new Vector2(0.5f, 0.5f);
-        iconRect.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRect.anchorMin = Vector2.zero;
+        iconRect.anchorMax = Vector2.one;
+        iconRect.sizeDelta = new Vector2(-10, -10); // Padding from edges
         iconRect.anchoredPosition = Vector2.zero;
         iconRect.localScale = Vector3.one;
 
@@ -169,25 +185,35 @@ public class InventorySlotUI : MonoBehaviour,
         if (amount > 1)
         {
             GameObject textObj = new GameObject("Amount");
-            textObj.transform.SetParent(dragVisualObject.transform);
+            textObj.transform.SetParent(dragVisualObject.transform, false); // worldPositionStays = false!
             TextMeshProUGUI dragText = textObj.AddComponent<TextMeshProUGUI>();
             dragText.text = amount.ToString();
-            dragText.fontSize = amountText.fontSize;
-            dragText.color = amountText.color;
+            dragText.fontSize = amountText != null ? amountText.fontSize : 16;
+            dragText.color = Color.white;
             dragText.alignment = TextAlignmentOptions.BottomRight;
+            dragText.raycastTarget = false;
             
             RectTransform textRect = textObj.GetComponent<RectTransform>();
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
-            textRect.sizeDelta = Vector2.zero;
+            textRect.sizeDelta = new Vector2(-5, -5); // Small padding
+            textRect.anchoredPosition = Vector2.zero;
             textRect.localScale = Vector3.one;
         }
+
+        Debug.Log($"✓ Created drag visual at position {dragRect.position}");
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (draggedSlot != this || dragVisualObject == null) return;
-        dragVisualObject.transform.position = eventData.position;
+        
+        // Update position to follow mouse
+        RectTransform dragRect = dragVisualObject.GetComponent<RectTransform>();
+        if (dragRect != null)
+        {
+            dragRect.position = eventData.position;
+        }
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -203,12 +229,12 @@ public class InventorySlotUI : MonoBehaviour,
         canvasGroup.alpha = 1f;
         draggedSlot = null;
 
-        Debug.Log("Ended dragging");
+        Debug.Log("✓ Ended dragging");
     }
 
     public void OnDrop(PointerEventData eventData)
     {
-        Debug.Log($"OnDrop called on {owner} slot {slotIndex}");
+        Debug.Log($"✓ OnDrop called on {owner} slot {slotIndex}");
 
         // Check if dragging from hotbar
         HotbarSlotUI hotbarSlot = eventData.pointerDrag?.GetComponent<HotbarSlotUI>();
