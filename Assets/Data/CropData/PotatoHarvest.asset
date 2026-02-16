@@ -21,3 +21,4 @@ MonoBehaviour:
   buyPrice: 20
   canBeCrafted: 1
   recipes: []
+  worldPrefab: {fileID: 6769217820621956873, guid: a4d46c2964d72344b8ede39dc3cbf424, type: 3}

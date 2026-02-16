@@ -17,4 +17,9 @@ MonoBehaviour:
   type: 0
   stackable: 1
   maxStack: 99
+  sellPrice: 10
+  buyPrice: 20
+  canBeCrafted: 0
+  recipes: []
+  worldPrefab: {fileID: 1499492064286468586, guid: 7ab6a026c0b6f32489e968c8df0b3a38, type: 3}
   cropData: {fileID: 11400000, guid: a25f9a6fee70b93449810d0e28ac0829, type: 2}

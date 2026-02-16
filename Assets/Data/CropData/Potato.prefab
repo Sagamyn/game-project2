@@ -163,3 +163,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: e45ab59f7c64d3d4ea99d3f3aef80fce, type: 2}
   amount: 1
+  pickupRadius: 1
+  autoPickup: 0
+  pickupKey: 101
+  spriteRenderer: {fileID: 0}
+  bobAnimation: 1
+  bobSpeed: 2
+  bobHeight: 0.2
+  pickupSound: {fileID: 0}
