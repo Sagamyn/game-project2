@@ -29,4 +29,7 @@ public abstract class ItemData : ScriptableObject
     [Header("Cooking (For Ingredients)")]
     public bool canBeCrafted = false;
     public Recipe[] recipes;
+
+    [Header("World Representation")]
+    public GameObject worldPrefab;
 }
