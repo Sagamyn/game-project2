@@ -7,11 +7,15 @@ public class ChestUIController : MonoBehaviour
     public PlayerInventory playerInventory;
     public InventorySlotUI slotPrefab;
 
-    [Header("UI")]
-    public Transform playerGrid;
-    public Transform chestGrid;
-    public GameObject panel;
-    public UIAnimator uiAnimator; // Optional: for animations
+    [Header("UI Panels")]
+    public GameObject panel;               // The whole ChestUI panel
+    public GameObject chestPanelUI;        // ChestPanelUI (chest slots)
+    public GameObject playerInventoryPanel; // PlayerInventoryPanel (player slots)
+    public UIAnimator uiAnimator;
+
+    [Header("Grids")]
+    public Transform playerGrid;   // PlayerInventoryPanel → Grid
+    public Transform chestGrid;    // ChestPanelUI → Grid
 
     private ChestInventory currentChest;
     private List<InventorySlotUI> playerSlots = new List<InventorySlotUI>();
@@ -22,12 +26,20 @@ public class ChestUIController : MonoBehaviour
 
     void Awake()
     {
+        // Hide everything at start
         if (uiAnimator != null)
             uiAnimator.HideInstant();
-        else
+        else if (panel != null)
             panel.SetActive(false);
-        
-        // Create player slots ONCE at start (they're always the same)
+
+        // Make sure both sub-panels are hidden too
+        if (chestPanelUI != null)
+            chestPanelUI.SetActive(false);
+
+        if (playerInventoryPanel != null)
+            playerInventoryPanel.SetActive(false);
+
+        // Pre-create player slots since player inventory never changes
         CreatePlayerSlots();
     }
 
@@ -53,25 +65,34 @@ public class ChestUIController : MonoBehaviour
         }
 
         currentChest = chest;
-        
-        // Use animator if available
-        if (uiAnimator != null)
-            uiAnimator.Show();
-        else
-            panel.SetActive(true);
-
         isOpen = true;
 
-        Debug.Log($"Opening chest with {chest.items.Count} slots");
+        // Show the root panel
+        if (uiAnimator != null)
+        {
+            panel.SetActive(true);
+            uiAnimator.Show();
+        }
+        else if (panel != null)
+        {
+            panel.SetActive(true);
+        }
 
-        // Subscribe to events
+        // Show both sub-panels
+        if (chestPanelUI != null)
+            chestPanelUI.SetActive(true);
+
+        if (playerInventoryPanel != null)
+            playerInventoryPanel.SetActive(true);
+
+        Debug.Log($"✓ Chest opened — showing ChestPanelUI + PlayerInventoryPanel");
+
+        // Subscribe to inventory change events
         playerInventory.OnInventoryChanged += RefreshPlayerInventory;
         currentChest.OnInventoryChanged += RefreshChestInventory;
 
-        // Create chest slots for THIS specific chest
+        // Build chest slots and refresh both
         CreateChestSlots();
-
-        // Refresh both
         RefreshPlayerInventory();
         RefreshChestInventory();
     }
@@ -82,23 +103,32 @@ public class ChestUIController : MonoBehaviour
 
         isOpen = false;
 
-        // Use animator if available
+        // Hide root panel
         if (uiAnimator != null)
             uiAnimator.Hide();
-        else
+        else if (panel != null)
             panel.SetActive(false);
 
-        // Unsubscribe
+        // Hide both sub-panels
+        if (chestPanelUI != null)
+            chestPanelUI.SetActive(false);
+
+        if (playerInventoryPanel != null)
+            playerInventoryPanel.SetActive(false);
+
+        // Unsubscribe events
         if (playerInventory != null)
             playerInventory.OnInventoryChanged -= RefreshPlayerInventory;
 
         if (currentChest != null)
             currentChest.OnInventoryChanged -= RefreshChestInventory;
 
-        // Destroy chest slots (they're chest-specific)
+        // Clean up chest-specific slots
         DestroyChestSlots();
-        
+
         currentChest = null;
+
+        Debug.Log("✓ Chest UI closed");
     }
 
     // =======================
@@ -107,25 +137,26 @@ public class ChestUIController : MonoBehaviour
 
     void CreatePlayerSlots()
     {
-        // Clear existing
         foreach (var slot in playerSlots)
             if (slot != null) Destroy(slot.gameObject);
         playerSlots.Clear();
 
         if (playerGrid == null)
         {
-            Debug.LogError("PlayerGrid is NULL! Please assign it in the Inspector.");
+            Debug.LogError("PlayerGrid is NULL! Assign it in the Inspector.");
             return;
         }
 
-        Debug.Log($"Creating {playerInventory.items.Count} player slots...");
-        Debug.Log($"PlayerGrid: {playerGrid.name}");
+        if (playerInventory == null)
+        {
+            Debug.LogError("PlayerInventory is NULL! Assign it in the Inspector.");
+            return;
+        }
 
-        // Create new slots
         for (int i = 0; i < playerInventory.items.Count; i++)
         {
             InventorySlotUI slot = Instantiate(slotPrefab, playerGrid);
-            slot.transform.SetParent(playerGrid, false); // Force set parent
+            slot.transform.SetParent(playerGrid, false);
             slot.name = $"PlayerSlot_{i}";
             slot.owner = InventoryOwner.Player;
             slot.Initialize(i);
@@ -133,57 +164,27 @@ public class ChestUIController : MonoBehaviour
         }
 
         Canvas.ForceUpdateCanvases();
-        Debug.Log($"✓ Created {playerSlots.Count} player slots in playerGrid");
+        Debug.Log($"✓ Created {playerSlots.Count} player slots");
     }
 
     void CreateChestSlots()
     {
-        // Clear existing chest slots
         DestroyChestSlots();
 
-        if (currentChest == null)
-        {
-            Debug.LogError("Cannot create chest slots - currentChest is null!");
-            return;
-        }
+        if (currentChest == null || chestGrid == null) return;
 
-        if (chestGrid == null)
-        {
-            Debug.LogError("ChestGrid is NULL! Please assign it in the Inspector.");
-            return;
-        }
-
-        Debug.Log($"Creating {currentChest.items.Count} chest slots...");
-        Debug.Log($"ChestGrid: {chestGrid.name} (Path: {GetGameObjectPath(chestGrid.gameObject)})");
-
-        // Create new slots for current chest
         for (int i = 0; i < currentChest.items.Count; i++)
         {
             InventorySlotUI slot = Instantiate(slotPrefab, chestGrid);
-            slot.transform.SetParent(chestGrid, false); // Force set parent
+            slot.transform.SetParent(chestGrid, false);
             slot.name = $"ChestSlot_{i}";
             slot.owner = InventoryOwner.Chest;
             slot.Initialize(i);
             chestSlots.Add(slot);
-
-            Debug.Log($"Created {slot.name} under {slot.transform.parent.name}");
         }
 
         Canvas.ForceUpdateCanvases();
-        Debug.Log($"✓ Created {chestSlots.Count} chest slots in chestGrid");
-    }
-
-    // Helper to debug hierarchy paths
-    string GetGameObjectPath(GameObject obj)
-    {
-        string path = obj.name;
-        Transform current = obj.transform.parent;
-        while (current != null)
-        {
-            path = current.name + "/" + path;
-            current = current.parent;
-        }
-        return path;
+        Debug.Log($"✓ Created {chestSlots.Count} chest slots");
     }
 
     void DestroyChestSlots()
@@ -204,9 +205,8 @@ public class ChestUIController : MonoBehaviour
 
         for (int i = 0; i < playerSlots.Count && i < playerInventory.items.Count; i++)
         {
-            var slotUI = playerSlots[i];
             var data = playerInventory.items[i];
-            slotUI.Set(data.item, data.amount);
+            playerSlots[i].Set(data.item, data.amount);
         }
 
         isRefreshing = false;
@@ -219,9 +219,8 @@ public class ChestUIController : MonoBehaviour
 
         for (int i = 0; i < chestSlots.Count && i < currentChest.items.Count; i++)
         {
-            var slotUI = chestSlots[i];
             var data = currentChest.items[i];
-            slotUI.Set(data.item, data.amount);
+            chestSlots[i].Set(data.item, data.amount);
         }
 
         isRefreshing = false;

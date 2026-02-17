@@ -20,6 +20,8 @@ public class AudioManager : MonoBehaviour
     public AudioClip pickaxeHitSound;
     public AudioClip rockBreakSound;
 
+    public AudioClip rainSound;
+
     void Awake()
     {
         if (Instance == null)
