@@ -95,9 +95,9 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6848845858706701350}
-  m_BodyType: 0
+  m_BodyType: 1
   m_Simulated: 1
-  m_UseFullKinematicContacts: 0
+  m_UseFullKinematicContacts: 1
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 7
@@ -128,7 +128,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: 14c11576289f2c34384939e3b2986540, type: 2}
   amount: 1
-  pickupDelay: 1
+  pickupRadius: 1
+  autoPickup: 1
+  pickupKey: 101
+  spriteRenderer: {fileID: 0}
+  bobAnimation: 1
+  bobSpeed: 2
+  bobHeight: 0.2
+  pickupSound: {fileID: 0}
+  showNotification: 1
+  pickupGracePeriod: 0
 --- !u!58 &555067093701570195
 CircleCollider2D:
   m_ObjectHideFlags: 0

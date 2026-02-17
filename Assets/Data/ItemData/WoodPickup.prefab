@@ -97,12 +97,12 @@ Rigidbody2D:
   m_GameObject: {fileID: 4614399586432625689}
   m_BodyType: 0
   m_Simulated: 1
-  m_UseFullKinematicContacts: 0
+  m_UseFullKinematicContacts: 1
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 7
   m_AngularDrag: 7
-  m_GravityScale: 0
+  m_GravityScale: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -128,7 +128,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   item: {fileID: 11400000, guid: 1efc420df1d8acf40854378014df9a33, type: 2}
   amount: 1
-  pickupDelay: 1
+  pickupRadius: 1
+  autoPickup: 1
+  pickupKey: 101
+  spriteRenderer: {fileID: 0}
+  bobAnimation: 1
+  bobSpeed: 2
+  bobHeight: 0.2
+  pickupSound: {fileID: 0}
+  showNotification: 1
+  pickupGracePeriod: 0
 --- !u!58 &-3954202078877380106
 CircleCollider2D:
   m_ObjectHideFlags: 0
