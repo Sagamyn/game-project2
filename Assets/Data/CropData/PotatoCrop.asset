@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3cc05072ca6b6f469edb3225d4eebc2, type: 3}
   m_Name: PotatoCrop
   m_EditorClassIdentifier: 
-  cropName: Carrot
+  cropName: Potato
   cropIcon: {fileID: 0}
   growthStages:
   - stageName: 

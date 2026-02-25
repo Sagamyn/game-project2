@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c92508331877594890fc6c9c21821d8, type: 3}
+  m_Name: Shop_PotatoSeed
+  m_EditorClassIdentifier: 
+  item: {fileID: 11400000, guid: 30361f6b9d1c01e40b8d49143ee245b6, type: 2}
+  buyPrice: 20
+  sellPrice: 8
+  hasUnlimitedStock: 1
+  stockAmount: 10
+  availableInSpring: 1
+  availableInSummer: 1
+  availableInFall: 1
+  availableInWinter: 1
+  requiresUnlock: 0
+  unlockCondition: 

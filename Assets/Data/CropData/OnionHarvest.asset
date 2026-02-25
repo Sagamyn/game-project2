@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: OnionHarvest
   m_EditorClassIdentifier: 
   itemName: Onion
-  icon: {fileID: 334003366, guid: 6281b25e186a1a44d9bd70376afad50d, type: 3}
+  icon: {fileID: -873629295, guid: 6281b25e186a1a44d9bd70376afad50d, type: 3}
   type: 5
   stackable: 1
   maxStack: 99
@@ -21,3 +21,4 @@ MonoBehaviour:
   buyPrice: 20
   canBeCrafted: 1
   recipes: []
+  worldPrefab: {fileID: 3238750535084947364, guid: 73916eacfb040f241b288ae1e89597d7, type: 3}

@@ -3,20 +3,38 @@ using UnityEngine;
 [RequireComponent(typeof(SpriteRenderer))]
 public class YSort : MonoBehaviour
 {
-    private SpriteRenderer sr;
+    [Header("Settings")]
+    public bool updateEveryFrame = true; // True for moving objects (player)
+    public int sortingOrderBase = 5000; // Base value for sorting
+    public int offset = 0; // Manual offset if needed
+    
+    private SpriteRenderer spriteRenderer;
 
-    // Adjust this to match your sprite feet position
-    [Tooltip("Negative value moves sorting point downward")]
-    public float yOffset = -0.16f;
-
-    void Awake()
+    void Start()
     {
-        sr = GetComponent<SpriteRenderer>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            Debug.LogWarning($"YPositionSorter on {gameObject.name} has no SpriteRenderer!");
+            enabled = false;
+            return;
+        }
+        
+        UpdateSortingOrder();
     }
 
     void LateUpdate()
     {
-        float sortY = transform.position.y + yOffset;
-        sr.sortingOrder = Mathf.RoundToInt(-sortY * 100);
+        if (updateEveryFrame)
+        {
+            UpdateSortingOrder();
+        }
+    }
+
+    void UpdateSortingOrder()
+    {
+        // Higher Y position = lower sorting order (renders behind)
+        // Lower Y position = higher sorting order (renders in front)
+        spriteRenderer.sortingOrder = (int)(sortingOrderBase - transform.position.y * 100) + offset;
     }
 }
