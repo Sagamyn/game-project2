@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6338015317500972366}
   - component: {fileID: 1968575647189112875}
   - component: {fileID: 8791088161982632232}
-  - component: {fileID: 1147762830094745277}
+  - component: {fileID: 2524251177684570900}
   m_Layer: 7
   m_Name: Stone
   m_TagString: Untagged
@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayerID: 1105143505
   m_SortingLayer: 2
   m_SortingOrder: 0
-  m_Sprite: {fileID: 1741364772, guid: a3729df63beb7b3469ec5b164cef1248, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a4aaf02c9f1bd23439e2fa920c237c90, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -152,7 +152,9 @@ MonoBehaviour:
   burstForce: 3
   burstTorque: 6
   despawnTime: 10
---- !u!60 &1147762830094745277
+  gravityDelay: 0.3
+  pickupDelay: 0.5
+--- !u!60 &2524251177684570900
 PolygonCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -196,13 +198,12 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.125, y: 0.5}
-      - {x: -0.3125, y: 0.4375}
-      - {x: -0.5, y: 0.25}
+    - - {x: -0.0625, y: 0.4375}
+      - {x: -0.5, y: 0}
       - {x: -0.5, y: -0.1875}
-      - {x: -0.3125, y: -0.375}
-      - {x: 0.1875, y: -0.375}
-      - {x: 0.5, y: -0.125}
-      - {x: 0.5, y: 0.125}
-      - {x: 0.125, y: 0.5}
+      - {x: -0.25, y: -0.4375}
+      - {x: 0.3125, y: -0.4375}
+      - {x: 0.5, y: -0.25}
+      - {x: 0.5, y: 0.1875}
+      - {x: 0.25, y: 0.4375}
   m_UseDelaunayMesh: 0

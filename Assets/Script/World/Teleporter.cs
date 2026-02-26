@@ -1,10 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-/// <summary>
-/// Simple teleporter - teleports player to another location in the SAME scene
-/// Like Pokémon walking off screen edges
-/// </summary>
+
 [RequireComponent(typeof(BoxCollider2D))]
 public class Teleporter : MonoBehaviour
 {

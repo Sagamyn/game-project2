@@ -3,6 +3,7 @@ using UnityEngine;
 /// <summary>
 /// Manages weather effects (rain, clear, etc.)
 /// Integrates with farming system for automatic watering
+/// UPDATED: Day 1-2 always clear, no debug GUI text
 /// </summary>
 public class WeatherManager : MonoBehaviour
 {
@@ -42,6 +43,9 @@ public class WeatherManager : MonoBehaviour
     [Tooltip("Weather changes randomly")]
     public bool enableRandomWeather = true;
     
+    [Tooltip("Days 1-2 are always clear (grace period)")]
+    public int clearWeatherGraceDays = 2;
+    
     [Tooltip("Chance of rain each new day (0-1)")]
     [Range(0f, 1f)]
     public float rainChance = 0.3f; // 30% chance
@@ -74,7 +78,11 @@ public class WeatherManager : MonoBehaviour
     public Camera mainCamera;
     private Color normalCameraColor;
     
-    // Events (using full namespace since we removed 'using System')
+    [Header("Debug")]
+    [Tooltip("Show weather text on screen")]
+    public bool showWeatherGUI = false; // CHANGED: Default to false
+    
+    // Events
     public event System.Action<WeatherType> OnWeatherChanged;
     
     private float weatherTimer = 0f;
@@ -95,9 +103,19 @@ public class WeatherManager : MonoBehaviour
             normalCameraColor = mainCamera.backgroundColor;
         }
         
-        // Setup rain audio
-        if (rainSound != null && rainAudioSource == null)
+        // Setup rain audio - USE AUDIOMANAGER!
+        if (AudioManager.Instance != null && AudioManager.Instance.rainSound != null)
         {
+            rainAudioSource = gameObject.AddComponent<AudioSource>();
+            rainAudioSource.clip = AudioManager.Instance.rainSound;
+            rainAudioSource.loop = true;
+            rainAudioSource.volume = rainVolume;
+            rainAudioSource.playOnAwake = false;
+            Debug.Log("✓ Rain audio using AudioManager");
+        }
+        else if (rainSound != null && rainAudioSource == null)
+        {
+            // Fallback
             rainAudioSource = gameObject.AddComponent<AudioSource>();
             rainAudioSource.clip = rainSound;
             rainAudioSource.loop = true;
@@ -200,6 +218,15 @@ public class WeatherManager : MonoBehaviour
     // Decide weather for the new day
     void DecideWeatherForDay()
     {
+        // GRACE PERIOD: Days 1-2 are always clear
+        if (currentDay <= clearWeatherGraceDays)
+        {
+            SetWeather(WeatherType.Clear);
+            Debug.Log($"☀️ Day {currentDay}: Clear weather (grace period)");
+            return;
+        }
+        
+        // After grace period, use random chance
         float roll = UnityEngine.Random.value;
         
         if (roll <= rainChance)
@@ -280,7 +307,7 @@ public class WeatherManager : MonoBehaviour
         }
         
         // Play rain sound
-        if (rainAudioSource != null && rainSound != null)
+        if (rainAudioSource != null)
         {
             rainAudioSource.Play();
             
@@ -314,8 +341,6 @@ public class WeatherManager : MonoBehaviour
         if (rainParticles != null)
         {
             rainParticles.Stop();
-            // Optional: Keep it active but stopped, or deactivate completely
-            // rainParticles.gameObject.SetActive(false);
         }
         
         // Stop rain sound
@@ -448,26 +473,7 @@ public class WeatherManager : MonoBehaviour
         }
     }
 
-    void OnGUI()
-    {
-        // Debug display
-        if (!Application.isPlaying) return;
-        
-        GUIStyle style = new GUIStyle();
-        style.fontSize = 20;
-        style.normal.textColor = Color.white;
-        style.alignment = TextAnchor.UpperLeft;
-        
-        string weatherText = $"Weather: {GetWeatherString()}";
-        
-        if (enableRandomWeather)
-        {
-            float timeUntilChange = nextWeatherChangeTime - weatherTimer;
-            weatherText += $"\nNext change: {timeUntilChange:F0}s";
-        }
-        
-        GUI.Label(new Rect(10, 100, 300, 100), weatherText, style);
-    }
+    // REMOVED OnGUI() - No more weather text on screen!
 }
 
 public enum WeatherType

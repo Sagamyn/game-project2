@@ -9,7 +9,7 @@ using UnityEngine.Tilemaps;
 public class CropData : ScriptableObject
 {
     [Header("Crop Info")]
-    public string cropName = "Carrot";
+    public string cropName = "New Crop";
     public Sprite cropIcon;
     
     [Header("Growth Stages")]
