@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
-
+// hotbar each item slot UI
 public class HotbarSlotUI : MonoBehaviour,
     IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
 {
@@ -182,7 +182,7 @@ public class HotbarSlotUI : MonoBehaviour,
 
             // Verify item actually exists in player inventory
             PlayerInventory playerInv = FindObjectOfType<PlayerInventory>();
-            if (playerInv != null && !playerInv.HasItem(droppedItem))
+            if (playerInv != null && playerInv.GetAmount(droppedItem) <= 0)
             {
                 Debug.LogWarning($"❌ Cannot add {droppedItem.itemName} to hotbar - not in player inventory!");
                 return;

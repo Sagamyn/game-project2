@@ -1,5 +1,5 @@
 using UnityEngine;
-
+// system logic for hotbar
 public class Hotbar : MonoBehaviour
 {
     [Header("Slots")]
@@ -54,7 +54,8 @@ public class Hotbar : MonoBehaviour
     void HandleScroll()
     {
         float scroll = Input.mouseScrollDelta.y;
-        if (scroll == 0) return;
+        if (scroll == 0) 
+            return;
 
         if (Time.time - lastScrollTime < scrollCooldown)
             return;
@@ -104,6 +105,18 @@ public class Hotbar : MonoBehaviour
         if (index < 0 || index >= slots.Length)
             return;
 
+        // cek apakah item sudah ada dihotbar, kalau iya, clear slot lama untuk mencegah dupe
+        if(item != null)
+        {
+            for(int i=0; i<slots.Length; i++)
+            {
+                if(i != index && slots[i] == item)
+                {
+                    slots[i] = null;
+                    Debug.Log($"Hotbar: cleared duplicate item {item.itemName} from slot {i}");
+                }
+            }
+        }
         slots[index] = item;
 
         if (hotbarUI != null)
@@ -142,19 +155,31 @@ public class Hotbar : MonoBehaviour
 
         for (int i = 0; i < slots.Length; i++)
         {
-            if (slots[i] != null)
-            {
-                // Check if player still has this item
-                if (!playerInventory.HasItem(slots[i]))
-                {
-                    Debug.Log($"Item {slots[i].itemName} no longer in inventory - clearing hotbar slot {i}");
-                    slots[i] = null;
-                    changed = true;
+            if (slots[i] == null) continue;
+            // cek qty item di inventory
+            int amount = playerInventory.GetAmount(slots[i]);
+            // clear slot jika item qty <= 0
+            if(amount <= 0) {
+                Debug.Log($"Hotbar : clearing slot {i} {{ slots[i].itemName }} - no longer in inventory");
+                slots[i] = null;
+                changed = true;
 
-                    if (i == selectedIndex && playerFarming != null)
-                        playerFarming.selectedItem = null;
-                }
+                if(i == selectedIndex && playerFarming != null)
+                    playerFarming.selectedItem = null;
             }
+            // original code, cek keberadaan item di inventory
+            // {
+            //     // Check if player still has this item
+            //     if (!playerInventory.HasItem(slots[i]))
+            //     {
+            //         Debug.Log($"Item {slots[i].itemName} no longer in inventory - clearing hotbar slot {i}");
+            //         slots[i] = null;
+            //         changed = true;
+
+            //         if (i == selectedIndex && playerFarming != null)
+            //             playerFarming.selectedItem = null;
+            //     }
+            // }
         }
 
         if (changed && hotbarUI != null)
