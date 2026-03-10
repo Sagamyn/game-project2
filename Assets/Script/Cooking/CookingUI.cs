@@ -27,10 +27,19 @@ public class CookingUI : MonoBehaviour
     public GameObject cookingProgressPanel;
     public TextMeshProUGUI progressText;
 
+    [Header("Close Button (Optional)")]
+    public Button closeButton;
+
     private CookingStation currentStation;
     private Recipe[] availableRecipes;
     private Recipe selectedRecipe;
     private bool isOpen = false;
+
+    // PUBLIC: For InventoryUI to check
+    public bool IsOpen()
+    {
+        return isOpen;
+    }
 
     void Awake()
     {
@@ -44,6 +53,11 @@ public class CookingUI : MonoBehaviour
 
         if (recipeDetailsPanel != null)
             recipeDetailsPanel.SetActive(false);
+
+        if (closeButton != null)
+        {
+            closeButton.onClick.AddListener(OnCloseButtonClicked);
+        }
     }
 
     public void Open(CookingStation station, Recipe[] recipes)
@@ -58,7 +72,6 @@ public class CookingUI : MonoBehaviour
         availableRecipes = recipes;
         isOpen = true;
 
-        // Show UI
         if (uiAnimator != null)
         {
             panel.SetActive(true);
@@ -69,7 +82,6 @@ public class CookingUI : MonoBehaviour
             panel.SetActive(true);
         }
 
-        // Populate recipe list
         PopulateRecipeList();
 
         Debug.Log($"Cooking UI opened with {recipes.Length} recipes");
@@ -81,35 +93,42 @@ public class CookingUI : MonoBehaviour
 
         isOpen = false;
 
-        // Hide UI
         if (uiAnimator != null)
             uiAnimator.Hide();
         else if (panel != null)
             panel.SetActive(false);
 
-        // Clear selection
         selectedRecipe = null;
         if (recipeDetailsPanel != null)
             recipeDetailsPanel.SetActive(false);
 
+        if (currentStation != null)
+        {
+            currentStation.OnUIClosed();
+        }
+
+        currentStation = null;
+
         Debug.Log("Cooking UI closed");
+    }
+
+    void OnCloseButtonClicked()
+    {
+        Close();
     }
 
     void PopulateRecipeList()
     {
-        // Clear existing buttons
         foreach (Transform child in recipeListParent)
         {
             Destroy(child.gameObject);
         }
 
-        // Create button for each recipe
         foreach (var recipe in availableRecipes)
         {
             RecipeButton button = Instantiate(recipeButtonPrefab, recipeListParent);
             button.Setup(recipe, this);
 
-            // Check if player can craft
             bool canCraft = recipe.CanCraft(playerInventory);
             button.SetCraftable(canCraft);
         }
@@ -128,7 +147,6 @@ public class CookingUI : MonoBehaviour
 
         Debug.Log($"Showing recipe details for: {recipe.recipeName}");
 
-        // Show recipe info
         if (recipeIcon != null)
         {
             recipeIcon.sprite = recipe.recipeIcon;
@@ -147,7 +165,6 @@ public class CookingUI : MonoBehaviour
             recipeDescription.gameObject.SetActive(true);
         }
 
-        // Clear old ingredients
         foreach (Transform child in ingredientsListParent)
         {
             Destroy(child.gameObject);
@@ -155,24 +172,21 @@ public class CookingUI : MonoBehaviour
 
         Debug.Log($"Creating {recipe.ingredients.Length} ingredient displays");
 
-        // Show new ingredients
         foreach (var ing in recipe.ingredients)
         {
             IngredientDisplay display = Instantiate(ingredientDisplayPrefab, ingredientsListParent);
             int has = playerInventory.GetAmount(ing.ingredient);
             display.Setup(ing.ingredient, ing.amount, has);
-            display.gameObject.SetActive(true); // Make sure it's active
+            display.gameObject.SetActive(true);
         }
 
-        // Force layout rebuild
         Canvas.ForceUpdateCanvases();
         LayoutRebuilder.ForceRebuildLayoutImmediate(ingredientsListParent.GetComponent<RectTransform>());
 
-        // Update cook button
         bool canCraft = recipe.CanCraft(playerInventory);
         if (cookButton != null)
         {
-            cookButton.gameObject.SetActive(true); // Make sure it's visible
+            cookButton.gameObject.SetActive(true);
             cookButton.interactable = canCraft && !currentStation.IsCooking();
             cookButton.onClick.RemoveAllListeners();
             cookButton.onClick.AddListener(() => OnCookButtonClicked());
@@ -210,10 +224,8 @@ public class CookingUI : MonoBehaviour
             progressText.text = "Cooking... 0%";
         }
 
-        // Start progress animation
         StartCoroutine(UpdateProgressText(duration));
 
-        // Disable cook button while cooking
         if (cookButton != null)
             cookButton.interactable = false;
 
@@ -238,13 +250,12 @@ public class CookingUI : MonoBehaviour
             yield return null;
         }
 
-        // Final state
         if (progressText != null)
         {
             progressText.text = "Done! 100%";
         }
 
-        yield return new WaitForSeconds(0.5f); // Show "Done" briefly
+        yield return new WaitForSeconds(0.5f);
     }
 
     public void OnCookingComplete(bool success)
@@ -252,10 +263,8 @@ public class CookingUI : MonoBehaviour
         if (cookingProgressPanel != null)
             cookingProgressPanel.SetActive(false);
 
-        // Refresh recipe list (update craftable status)
         PopulateRecipeList();
 
-        // Refresh selected recipe details
         if (selectedRecipe != null)
             ShowRecipeDetails(selectedRecipe);
 
@@ -271,7 +280,6 @@ public class CookingUI : MonoBehaviour
 
     void Update()
     {
-        // Close with ESC key
         if (isOpen && Input.GetKeyDown(KeyCode.Escape))
         {
             Close();

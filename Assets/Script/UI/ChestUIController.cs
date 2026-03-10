@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
 using System.Collections.Generic;
 
 public class ChestUIController : MonoBehaviour
@@ -23,6 +25,7 @@ public class ChestUIController : MonoBehaviour
 
     private bool isOpen;
     private bool isRefreshing;
+    private bool playerSlotsCreated = false;
 
     void Awake()
     {
@@ -38,9 +41,6 @@ public class ChestUIController : MonoBehaviour
 
         if (playerInventoryPanel != null)
             playerInventoryPanel.SetActive(false);
-
-        // Pre-create player slots since player inventory never changes
-        CreatePlayerSlots();
     }
 
     void OnDestroy()
@@ -50,6 +50,11 @@ public class ChestUIController : MonoBehaviour
 
         if (currentChest != null)
             currentChest.OnInventoryChanged -= RefreshChestInventory;
+    }
+
+    public bool IsOpen()
+    {
+        return isOpen;
     }
 
     // =======================
@@ -67,7 +72,30 @@ public class ChestUIController : MonoBehaviour
         currentChest = chest;
         isOpen = true;
 
-        // Show the root panel
+        // FORCE: Show panels FIRST before creating slots
+        ForceShowAllPanels();
+
+        // Subscribe to inventory change events
+        playerInventory.OnInventoryChanged += RefreshPlayerInventory;
+        currentChest.OnInventoryChanged += RefreshChestInventory;
+
+        // Create player slots if needed (first time only)
+        if (!playerSlotsCreated || playerSlots.Count == 0)
+        {
+            CreatePlayerSlots();
+            playerSlotsCreated = true;
+        }
+
+        // Build chest slots
+        CreateChestSlots();
+
+        // Force refresh after a frame delay
+        StartCoroutine(RefreshAfterFrame());
+    }
+
+    void ForceShowAllPanels()
+    {
+        // Show root panel
         if (uiAnimator != null)
         {
             panel.SetActive(true);
@@ -78,23 +106,35 @@ public class ChestUIController : MonoBehaviour
             panel.SetActive(true);
         }
 
-        // Show both sub-panels
+        // FORCE: Show both sub-panels explicitly
         if (chestPanelUI != null)
+        {
             chestPanelUI.SetActive(true);
+            ForceEnableChildren(chestPanelUI.transform);
+        }
 
         if (playerInventoryPanel != null)
+        {
             playerInventoryPanel.SetActive(true);
+            ForceEnableChildren(playerInventoryPanel.transform);
+        }
 
-        Debug.Log($"✓ Chest opened — showing ChestPanelUI + PlayerInventoryPanel");
+        // FORCE: Enable grids
+        if (playerGrid != null)
+            playerGrid.gameObject.SetActive(true);
 
-        // Subscribe to inventory change events
-        playerInventory.OnInventoryChanged += RefreshPlayerInventory;
-        currentChest.OnInventoryChanged += RefreshChestInventory;
+        if (chestGrid != null)
+            chestGrid.gameObject.SetActive(true);
 
-        // Build chest slots and refresh both
-        CreateChestSlots();
-        RefreshPlayerInventory();
-        RefreshChestInventory();
+        Debug.Log("✓ Chest opened — showing ChestPanelUI + PlayerInventoryPanel");
+    }
+
+    void ForceEnableChildren(Transform parent)
+    {
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            parent.GetChild(i).gameObject.SetActive(true);
+        }
     }
 
     public void Close()
@@ -153,17 +193,48 @@ public class ChestUIController : MonoBehaviour
             return;
         }
 
+        if (playerInventory.items == null || playerInventory.items.Count == 0)
+        {
+            Debug.LogError("PlayerInventory.items is NULL or empty!");
+            return;
+        }
+
+        Debug.Log($"Creating {playerInventory.items.Count} player slots...");
+
+        // FORCE: Make sure parent is active before creating children
+        playerGrid.gameObject.SetActive(true);
+        if (playerInventoryPanel != null)
+            playerInventoryPanel.SetActive(true);
+
         for (int i = 0; i < playerInventory.items.Count; i++)
         {
             InventorySlotUI slot = Instantiate(slotPrefab, playerGrid);
             slot.transform.SetParent(playerGrid, false);
+            
+            // FORCE: Everything visible
+            slot.gameObject.SetActive(true);
+            slot.enabled = true;
+            
             slot.name = $"PlayerSlot_{i}";
             slot.owner = InventoryOwner.Player;
             slot.Initialize(i);
+            
+            // FORCE: Canvas group visible
+            CanvasGroup cg = slot.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.alpha = 1f;
+                cg.interactable = true;
+                cg.blocksRaycasts = true;
+            }
+            
             playerSlots.Add(slot);
         }
 
+        // Force canvas updates
         Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(playerGrid.GetComponent<RectTransform>());
+        
         Debug.Log($"✓ Created {playerSlots.Count} player slots");
     }
 
@@ -173,17 +244,40 @@ public class ChestUIController : MonoBehaviour
 
         if (currentChest == null || chestGrid == null) return;
 
+        // FORCE: Make sure parent is active before creating children
+        chestGrid.gameObject.SetActive(true);
+        if (chestPanelUI != null)
+            chestPanelUI.SetActive(true);
+
         for (int i = 0; i < currentChest.items.Count; i++)
         {
             InventorySlotUI slot = Instantiate(slotPrefab, chestGrid);
             slot.transform.SetParent(chestGrid, false);
+            
+            // FORCE: Everything visible
+            slot.gameObject.SetActive(true);
+            slot.enabled = true;
+            
             slot.name = $"ChestSlot_{i}";
             slot.owner = InventoryOwner.Chest;
             slot.Initialize(i);
+            
+            // FORCE: Canvas group visible
+            CanvasGroup cg = slot.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.alpha = 1f;
+                cg.interactable = true;
+                cg.blocksRaycasts = true;
+            }
+            
             chestSlots.Add(slot);
         }
 
+        // Force canvas updates
         Canvas.ForceUpdateCanvases();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(chestGrid.GetComponent<RectTransform>());
+        
         Debug.Log($"✓ Created {chestSlots.Count} chest slots");
     }
 
@@ -203,10 +297,28 @@ public class ChestUIController : MonoBehaviour
         if (isRefreshing || !isOpen) return;
         isRefreshing = true;
 
+        // Remove any destroyed slots
+        playerSlots.RemoveAll(slot => slot == null);
+
+        // Recreate if all slots were destroyed
+        if (playerSlots.Count == 0)
+        {
+            Debug.LogWarning("Player slots were destroyed! Recreating...");
+            CreatePlayerSlots();
+        }
+
         for (int i = 0; i < playerSlots.Count && i < playerInventory.items.Count; i++)
         {
-            var data = playerInventory.items[i];
-            playerSlots[i].Set(data.item, data.amount);
+            if (playerSlots[i] != null)
+            {
+                var data = playerInventory.items[i];
+                
+                // FORCE: Make sure slot is visible
+                playerSlots[i].gameObject.SetActive(true);
+                
+                // Set data
+                playerSlots[i].Set(data.item, data.amount);
+            }
         }
 
         isRefreshing = false;
@@ -217,12 +329,50 @@ public class ChestUIController : MonoBehaviour
         if (isRefreshing || !isOpen || currentChest == null) return;
         isRefreshing = true;
 
+        // Remove any destroyed slots
+        chestSlots.RemoveAll(slot => slot == null);
+
         for (int i = 0; i < chestSlots.Count && i < currentChest.items.Count; i++)
         {
-            var data = currentChest.items[i];
-            chestSlots[i].Set(data.item, data.amount);
+            if (chestSlots[i] != null)
+            {
+                var data = currentChest.items[i];
+                
+                // FORCE: Make sure slot is visible
+                chestSlots[i].gameObject.SetActive(true);
+                
+                // Set data
+                chestSlots[i].Set(data.item, data.amount);
+            }
         }
 
         isRefreshing = false;
+    }
+
+    // Refresh after frame to ensure everything is initialized
+    IEnumerator RefreshAfterFrame()
+    {
+        yield return new WaitForEndOfFrame();
+        
+        // Force panels visible again
+        if (playerInventoryPanel != null) playerInventoryPanel.SetActive(true);
+        if (chestPanelUI != null) chestPanelUI.SetActive(true);
+        if (playerGrid != null) playerGrid.gameObject.SetActive(true);
+        if (chestGrid != null) chestGrid.gameObject.SetActive(true);
+        
+        // Force all slots active
+        foreach (var slot in playerSlots)
+            if (slot != null) slot.gameObject.SetActive(true);
+        
+        foreach (var slot in chestSlots)
+            if (slot != null) slot.gameObject.SetActive(true);
+        
+        // Refresh both inventories
+        RefreshPlayerInventory();
+        RefreshChestInventory();
+        
+        Canvas.ForceUpdateCanvases();
+        
+        Debug.Log("✓ Post-frame refresh complete");
     }
 }

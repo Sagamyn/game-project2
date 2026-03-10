@@ -2,12 +2,8 @@ using UnityEngine;
 using System.Collections;
 
 /// <summary>
-/// Stardew Valley style tree chopping effect:
-/// 1. Shake when hit
-/// 2. Drop leaves particles
-/// 3. Tree top falls left/right when chopped
-/// 4. Dust particles on ground
-/// 5. Wood items burst out
+/// Stardew Valley style tree chopping - Items drop DURING fall animation!
+/// Like in the video - tree falls and items burst out while falling
 /// </summary>
 public class Tree : MonoBehaviour, IDamageable
 {
@@ -42,13 +38,13 @@ public class Tree : MonoBehaviour, IDamageable
     public int shakeCount = 3;
     
     [Header("Fall Effect")]
-    public float fallDuration = 100f;
-    public float fallRotation = 90f; // How much tree rotates when falling
+    public float fallDuration = 1.5f; // FIXED! Should be 1-2 seconds, not 100!
+    public float fallRotation = 90f;
     public AnimationCurve fallCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
     
     [Header("Particles")]
-    public ParticleSystem leavesParticles; // Leaves when hit
-    public ParticleSystem dustParticles; // Dust when tree falls
+    public ParticleSystem leavesParticles;
+    public ParticleSystem dustParticles;
     public int leavesPerHit = 10;
     
     private Vector3 originalPosition;
@@ -123,7 +119,6 @@ public class Tree : MonoBehaviour, IDamageable
         {
             leavesParticles.transform.position = treeTop.position;
             leavesParticles.Emit(count);
-            Debug.Log($"🍃 Spawned {count} leaves");
         }
     }
 
@@ -144,25 +139,28 @@ public class Tree : MonoBehaviour, IDamageable
         // Step 1: Big leaf burst
         SpawnLeaves(leavesPerHit * 3);
         
-        // Step 2: Tree top falls
+        // Step 2: Start tree falling AND spawn items at same time!
         if (treeTop != null)
         {
-            yield return StartCoroutine(TreeFallAnimation());
+            StartCoroutine(TreeFallAnimation()); // Start falling (don't wait!)
         }
         
-        // Step 3: Dust on ground
+        // Step 3: Items burst out IMMEDIATELY (while tree is falling!)
+        yield return new WaitForSeconds(0.1f); // Tiny delay
+        SpawnWoodBurst();
+        
+        // Step 4: Wait for tree to finish falling
+        yield return new WaitForSeconds(fallDuration);
+        
+        // Step 5: Dust on ground
         if (dustParticles != null)
         {
             dustParticles.transform.position = transform.position;
             dustParticles.Play();
         }
         
-        // Step 4: Wood burst
-        yield return new WaitForSeconds(0.2f); // Small delay for effect
-        SpawnWoodBurst();
-        
-        // Step 5: Cleanup
-        yield return new WaitForSeconds(0.3f);
+        // Step 6: Cleanup
+        yield return new WaitForSeconds(0.5f);
         Destroy(gameObject);
     }
 
@@ -243,8 +241,8 @@ public class Tree : MonoBehaviour, IDamageable
                 rb.bodyType = RigidbodyType2D.Dynamic;
                 rb.simulated = true;
                 rb.gravityScale = 0f;
-                rb.drag = 2f;
-                rb.angularDrag = 2f;
+                rb.drag = 3f;
+                rb.angularDrag = 8f; // High drag to reduce spinning
                 rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
                 rb.interpolation = RigidbodyInterpolation2D.Interpolate;
                 

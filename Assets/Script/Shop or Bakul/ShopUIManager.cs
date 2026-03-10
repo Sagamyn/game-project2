@@ -47,7 +47,14 @@ public class ShopUIManager : MonoBehaviour
     private ShopItem selectedShopItem;
     private List<GameObject> spawnedSlots = new List<GameObject>();
     private bool isBuyMode = true;
+    private bool isShopOpen = false; // Track shop state
     private AudioSource audioSource;
+
+    // PUBLIC: For InventoryUI to check
+    public bool IsOpen()
+    {
+        return isShopOpen;
+    }
 
     void Awake()
     {
@@ -81,6 +88,7 @@ public class ShopUIManager : MonoBehaviour
     public void OpenShop(ShopNPC shop)
     {
         currentShop = shop;
+        isShopOpen = true; // Set to true when opening
 
         if (shopUIRoot != null)
             shopUIRoot.SetActive(true);
@@ -103,10 +111,14 @@ public class ShopUIManager : MonoBehaviour
         SwitchTab(true); // Start in buy mode
         
         UpdatePlayerMoneyDisplay();
+        
+        Debug.Log($"✓ Shop '{shop.shopName}' opened");
     }
 
     public void CloseShop()
     {
+        isShopOpen = false; // Set to false when closing
+
         if (shopUIRoot != null)
             shopUIRoot.SetActive(false);
 
@@ -120,6 +132,8 @@ public class ShopUIManager : MonoBehaviour
         
         ClearItemDisplay();
         currentShop = null;
+        
+        Debug.Log("✓ Shop closed");
     }
 
     void SwitchTab(bool buyMode)
@@ -196,7 +210,7 @@ public class ShopUIManager : MonoBehaviour
                 // Create a temporary shop item for selling
                 ShopItem tempShopItem = ScriptableObject.CreateInstance<ShopItem>();
                 tempShopItem.item = slot.item;
-                tempShopItem.sellPrice = slot.item.sellPrice; // Use ItemData's sellPrice
+                tempShopItem.sellPrice = slot.item.sellPrice;
                 
                 CreateItemSlot(tempShopItem, true);
             }
@@ -233,8 +247,6 @@ public class ShopUIManager : MonoBehaviour
         if (selectedItemName != null)
             selectedItemName.text = shopItem.item.itemName;
         
-        // Note: ItemData doesn't have a description field
-        // You can add one or leave it blank
         if (selectedItemDescription != null)
             selectedItemDescription.text = GetItemDescription(shopItem.item);
         
@@ -257,7 +269,6 @@ public class ShopUIManager : MonoBehaviour
         }
     }
 
-    // Helper to get description based on item type
     string GetItemDescription(ItemData item)
     {
         if (item is SeedItem seed)
@@ -270,7 +281,7 @@ public class ShopUIManager : MonoBehaviour
         }
         else
         {
-            return $"A {item.type} item"; // Fallback
+            return $"A {item.type} item";
         }
     }
 
@@ -281,14 +292,13 @@ public class ShopUIManager : MonoBehaviour
         
         if (isBuyMode)
         {
-            // Buy from shop
             bool success = currentShop.PurchaseItem(selectedShopItem, amount);
             
             if (success)
             {
                 PlaySound(purchaseSound);
                 UpdatePlayerMoneyDisplay();
-                DisplayBuyItems(); // Refresh
+                DisplayBuyItems();
             }
             else
             {
@@ -297,14 +307,13 @@ public class ShopUIManager : MonoBehaviour
         }
         else
         {
-            // Sell to shop
             bool success = currentShop.SellItem(selectedShopItem.item, amount);
             
             if (success)
             {
                 PlaySound(sellSound);
                 UpdatePlayerMoneyDisplay();
-                DisplaySellItems(); // Refresh
+                DisplaySellItems();
             }
             else
             {
@@ -347,7 +356,6 @@ public class ShopUIManager : MonoBehaviour
 
     void Update()
     {
-        // Close shop with Escape
         if (shopPanel != null && shopPanel.activeSelf && Input.GetKeyDown(KeyCode.Escape))
         {
             CloseShop();

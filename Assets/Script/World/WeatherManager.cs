@@ -103,25 +103,41 @@ public class WeatherManager : MonoBehaviour
             normalCameraColor = mainCamera.backgroundColor;
         }
         
-        // Setup rain audio - USE AUDIOMANAGER!
-        if (AudioManager.Instance != null && AudioManager.Instance.rainSound != null)
+// Setup rain audio
+if (rainAudioSource == null)
+{
+    // Try using AudioManager's SFX source
+    if (AudioManager.Instance != null)
+    {
+        rainAudioSource = AudioManager.Instance.sfxSource;
+    }
+}
+
+    // Assign clip if needed
+    if (rainAudioSource != null)
+    {
+        if (rainAudioSource.clip == null)
         {
-            rainAudioSource = gameObject.AddComponent<AudioSource>();
-            rainAudioSource.clip = AudioManager.Instance.rainSound;
-            rainAudioSource.loop = true;
-            rainAudioSource.volume = rainVolume;
-            rainAudioSource.playOnAwake = false;
-            Debug.Log("✓ Rain audio using AudioManager");
+            if (AudioManager.Instance != null && AudioManager.Instance.rainSound != null)
+            {
+                rainAudioSource.clip = AudioManager.Instance.rainSound;
+            }
+            else if (rainSound != null)
+            {
+                rainAudioSource.clip = rainSound;
+            }
         }
-        else if (rainSound != null && rainAudioSource == null)
-        {
-            // Fallback
-            rainAudioSource = gameObject.AddComponent<AudioSource>();
-            rainAudioSource.clip = rainSound;
-            rainAudioSource.loop = true;
-            rainAudioSource.volume = rainVolume;
-            rainAudioSource.playOnAwake = false;
-        }
+
+        rainAudioSource.loop = true;
+        rainAudioSource.volume = rainVolume;
+        rainAudioSource.playOnAwake = false;
+
+        Debug.Log(" WeatherManager using existing AudioSource");
+    }
+    else
+    {
+        Debug.LogWarning("No AudioSource found for rain!");
+    }
         
         // Register with day/night manager for day-based weather
         DayNightManager dayManager = FindObjectOfType<DayNightManager>();

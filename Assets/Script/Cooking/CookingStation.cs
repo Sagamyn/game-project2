@@ -54,6 +54,22 @@ public class CookingStation : Interactable
         Debug.Log("Cooking Station opened");
     }
 
+    // NEW: Public method that CookingUI can call when it closes
+    public void OnUIClosed()
+    {
+        isOpen = false;
+        
+        PlayerMovement.Instance?.LockMovement(false);
+
+        // Show hotbar
+        if (HotbarVisibilityManager.Instance != null)
+        {
+            HotbarVisibilityManager.Instance.ShowHotbar();
+        }
+
+        Debug.Log("Cooking Station closed (via UI)");
+    }
+
     void CloseCookingUI()
     {
         if (cookingUI == null) return;
