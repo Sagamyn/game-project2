@@ -20,6 +20,23 @@ public class CameraFollow : MonoBehaviour
     public bool showBoundaries = true;
     public Color boundaryColor = Color.red;
 
+    void Start()
+    {
+        if (target == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                target = player.transform;
+            }
+        }
+
+        if (target != null)
+        {
+            transform.position = target.position + offset;
+        }
+    }
+
     void LateUpdate()
     {
         if (target == null)

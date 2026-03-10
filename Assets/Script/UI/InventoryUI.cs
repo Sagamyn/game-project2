@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 
@@ -16,15 +18,15 @@ public class InventoryUI : MonoBehaviour
     public Hotbar hotbar;
     public GameObject panel;
     public TMP_Text moneyText;
-    public UIAnimator uiAnimator; // Optional: for animations
+    public UIAnimator uiAnimator;
 
     private List<InventorySlotUI> slotUIList = new List<InventorySlotUI>();
     private bool isOpen;
-    private bool isRefreshing = false; // Prevent refresh loops
+    private bool isRefreshing = false;
+    private bool slotsCreated = false;
 
     void Start()
     {
- 
         // Subscribe to inventory changes
         if (inventory != null)
         {
@@ -32,12 +34,13 @@ public class InventoryUI : MonoBehaviour
         }
 
         if (playerMoney != null)
-        playerMoney.OnMoneyChanged += UpdateMoneyDisplay;
+            playerMoney.OnMoneyChanged += UpdateMoneyDisplay;
 
         // Create all slots once at start
         CreateSlots();
+        slotsCreated = true;
 
-        // Close inventory by default - but keep InventoryUI active!
+        // Close inventory by default
         if (uiAnimator != null)
         {
             uiAnimator.HideInstant();
@@ -53,7 +56,7 @@ public class InventoryUI : MonoBehaviour
         Refresh();
 
         if (playerMoney != null)
-        UpdateMoneyDisplay(playerMoney.CurrentMoney);
+            UpdateMoneyDisplay(playerMoney.CurrentMoney);
     }
 
     void OnDestroy()
@@ -66,14 +69,29 @@ public class InventoryUI : MonoBehaviour
         if (playerMoney != null)
         {
             playerMoney.OnMoneyChanged -= UpdateMoneyDisplay;
-        }   
+        }
     }
 
     void Update()
     {
-        // Always check for Tab input, even when panel is hidden
+        // Check for Tab input
         if (Input.GetKeyDown(KeyCode.Tab))
         {
+            // CRITICAL: Check if chest is open
+            ChestUIController chestUI = FindObjectOfType<ChestUIController>();
+            if (chestUI != null && chestUI.IsOpen())
+            {
+                Debug.Log("Cannot open inventory - chest is already showing inventory");
+                return;
+            }
+
+            // Check if other blocking UIs are open
+            if (!isOpen && IsBlockingUIOpen())
+            {
+                Debug.Log("Cannot open inventory - another UI is blocking");
+                return;
+            }
+
             if (isOpen)
                 CloseInventory();
             else
@@ -81,14 +99,48 @@ public class InventoryUI : MonoBehaviour
         }
     }
 
+    bool IsBlockingUIOpen()
+    {
+        CookingUI cookingUI = FindObjectOfType<CookingUI>();
+        if (cookingUI != null && cookingUI.IsOpen())
+            return true;
+
+        ShopUIManager shopUI = FindObjectOfType<ShopUIManager>();
+        if (shopUI != null && shopUI.IsOpen())
+            return true;
+
+        RestaurantUI restaurantUI = FindObjectOfType<RestaurantUI>();
+        if (restaurantUI != null && restaurantUI.IsOpen())
+            return true;
+
+        return false;
+    }
+
     void OpenInventory()
     {
         isOpen = true;
 
-        // Use animator if available
+        // FORCE: Show panel and force all children visible
+        ForceShowPanel();
+
+        if (playerMovement != null)
+            playerMovement.LockMovement(true);
+
+        if (HotbarVisibilityManager.Instance != null)
+            HotbarVisibilityManager.Instance.OnInventoryOpen();
+
+        // Force refresh after frame
+        StartCoroutine(RefreshAfterFrame());
+        
+        Debug.Log("✓ Inventory opened");
+    }
+
+    void ForceShowPanel()
+    {
+        // Show panel
         if (uiAnimator != null)
         {
-            panel.SetActive(true); // Activate first
+            panel.SetActive(true);
             uiAnimator.Show();
         }
         else
@@ -96,23 +148,28 @@ public class InventoryUI : MonoBehaviour
             panel.SetActive(true);
         }
 
-        if (playerMovement != null)
-            playerMovement.LockMovement(true);
+        // FORCE: Enable all children of panel
+        ForceEnableChildren(panel.transform);
 
-        // Optional: Hide hotbar when inventory opens
-        if (HotbarVisibilityManager.Instance != null)
+        // FORCE: Enable grid specifically
+        if (gridParent != null)
         {
-            HotbarVisibilityManager.Instance.OnInventoryOpen();
+            gridParent.gameObject.SetActive(true);
         }
+    }
 
-        Refresh();
+    void ForceEnableChildren(Transform parent)
+    {
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            parent.GetChild(i).gameObject.SetActive(true);
+        }
     }
 
     void CloseInventory()
     {
         isOpen = false;
 
-        // Use animator if available, otherwise just hide
         if (uiAnimator != null)
             uiAnimator.Hide();
         else
@@ -121,136 +178,166 @@ public class InventoryUI : MonoBehaviour
         if (playerMovement != null)
             playerMovement.LockMovement(false);
 
-        // Optional: Show hotbar when inventory closes
         if (HotbarVisibilityManager.Instance != null)
-        {
             HotbarVisibilityManager.Instance.OnInventoryClose();
-        }
+        
+        Debug.Log("✓ Inventory closed");
     }
 
-    // Create slots ONCE at the start - they never get destroyed
+    public void ForceClose()
+    {
+        if (isOpen)
+            CloseInventory();
+    }
+
+    public bool IsOpen()
+    {
+        return isOpen;
+    }
+
     void CreateSlots()
     {
-        // Clear any existing slots
+        // CRITICAL: Don't destroy if slots already exist
+        if (slotsCreated && slotUIList.Count > 0)
+        {
+            Debug.Log("InventoryUI slots already created, skipping recreation...");
+            return;
+        }
+
+        // Clear any existing slots (only on first creation)
         foreach (Transform child in gridParent)
             Destroy(child.gameObject);
 
         slotUIList.Clear();
 
-        if (slotPrefab == null)
+        if (slotPrefab == null || gridParent == null)
         {
-            Debug.LogError("Slot Prefab is NULL! Please assign it in the Inspector.");
+            Debug.LogError("Slot Prefab or Grid Parent is NULL!");
             return;
         }
 
-        if (gridParent == null)
+        if (inventory == null)
         {
-            Debug.LogError("Grid Parent is NULL! Please assign it in the Inspector.");
+            Debug.LogError("PlayerInventory is NULL!");
             return;
         }
 
-        Debug.Log($"Creating {inventory.maxSlots} slots...");
+        Debug.Log($"Creating {inventory.maxSlots} InventoryUI slots...");
 
-        // Create slots for all inventory positions
+        // FORCE: Make sure parent is active before creating children
+        gridParent.gameObject.SetActive(true);
+
         for (int i = 0; i < inventory.maxSlots; i++)
         {
             InventorySlotUI slot = Instantiate(slotPrefab, gridParent);
-            slot.name = $"InventorySlot_{i}"; // Give it a clear name for debugging
-            slot.Initialize(i); // Pass the index
-            slotUIList.Add(slot);
-
-            // Make sure the slot is active and visible
+            slot.transform.SetParent(gridParent, false);
+            
+            // FORCE: Everything visible
             slot.gameObject.SetActive(true);
+            slot.enabled = true;
+            
+            slot.name = $"InventoryUISlot_{i}";
+            slot.owner = InventoryOwner.Player;
+            slot.Initialize(i);
+            
+            // FORCE: Canvas group visible
+            CanvasGroup cg = slot.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.alpha = 1f;
+                cg.interactable = true;
+                cg.blocksRaycasts = true;
+            }
+            
+            slotUIList.Add(slot);
             
             // Add click listener for hotbar assignment
-            int index = i; // Capture for lambda
-            var button = slot.GetComponent<UnityEngine.UI.Button>();
+            int index = i;
+            var button = slot.GetComponent<Button>();
             if (button != null)
-            {
                 button.onClick.AddListener(() => AssignToHotbar(index));
-            }
-
-            Debug.Log($"Created slot {i}: {slot.name}");
         }
 
-        // Force layout update
+        // Force canvas updates
         Canvas.ForceUpdateCanvases();
-
-        Debug.Log($"✓ Successfully created {slotUIList.Count} inventory slots");
+        LayoutRebuilder.ForceRebuildLayoutImmediate(gridParent.GetComponent<RectTransform>());
+        
+        Debug.Log($"✓ Created {slotUIList.Count} InventoryUI slots");
     }
 
-    // Update slot visuals without destroying them
     public void Refresh()
     {
-        // Prevent recursive refresh calls
         if (isRefreshing) return;
         isRefreshing = true;
 
         if (inventory == null || inventory.items == null)
         {
-            Debug.LogWarning("Inventory or items list is null!");
             isRefreshing = false;
             return;
         }
 
-        // Make sure we have enough slots
+        // Remove null slots
+        slotUIList.RemoveAll(slot => slot == null);
+
+        // Recreate if all slots were destroyed
         if (slotUIList.Count == 0)
         {
-            Debug.LogWarning("No slots found! Creating slots...");
+            Debug.LogWarning("All InventoryUI slots were destroyed! Recreating...");
+            slotsCreated = false;
             CreateSlots();
+            slotsCreated = true;
         }
 
-        Debug.Log($"Refreshing {slotUIList.Count} slots with {inventory.items.Count} items");
-
-        // Update each slot's display WITHOUT changing their position
+        // Update each slot
         for (int i = 0; i < slotUIList.Count && i < inventory.items.Count; i++)
         {
             if (slotUIList[i] != null)
             {
+                // FORCE: Make sure slot is visible
+                slotUIList[i].gameObject.SetActive(true);
+                
+                // Set data
                 var itemSlot = inventory.items[i];
                 slotUIList[i].Set(itemSlot.item, itemSlot.amount);
-                
-                // Debug each slot
-                if (itemSlot.item != null)
-                {
-                    Debug.Log($"Slot {i}: {itemSlot.item.itemName} x{itemSlot.amount}");
-                }
-            }
-            else
-            {
-                Debug.LogError($"Slot {i} is NULL!");
             }
         }
 
         isRefreshing = false;
-        Debug.Log("✓ Inventory UI refreshed - slots updated in place");
+    }
+
+    // Force refresh after frame to ensure everything is initialized
+    IEnumerator RefreshAfterFrame()
+    {
+        yield return new WaitForEndOfFrame();
+        
+        // Force panel and grid visible again
+        if (panel != null) panel.SetActive(true);
+        if (gridParent != null) gridParent.gameObject.SetActive(true);
+        
+        // Force all slots active
+        foreach (var slot in slotUIList)
+        {
+            if (slot != null) slot.gameObject.SetActive(true);
+        }
+        
+        // Refresh inventory
+        Refresh();
+        
+        Canvas.ForceUpdateCanvases();
+        
+        Debug.Log("✓ InventoryUI post-frame refresh complete");
     }
 
     void AssignToHotbar(int inventorySlotIndex)
     {
-        if (hotbar == null)
-        {
-            Debug.LogError("Hotbar reference is NULL!");
+        if (hotbar == null || inventorySlotIndex < 0 || inventorySlotIndex >= inventory.items.Count)
             return;
-        }
-
-        if (inventorySlotIndex < 0 || inventorySlotIndex >= inventory.items.Count)
-        {
-            Debug.LogError($"Invalid slot index: {inventorySlotIndex}");
-            return;
-        }
 
         ItemData item = inventory.items[inventorySlotIndex].item;
-        
         if (item == null)
-        {
-            Debug.LogWarning("Selected slot is empty");
             return;
-        }
 
         int hotbarIndex = hotbar.selectedIndex;
-        Debug.Log($"Assigning {item.itemName} to hotbar slot {hotbarIndex}");
-
         hotbar.SetSlot(hotbarIndex, item);
 
         if (playerFarming != null)
@@ -260,8 +347,6 @@ public class InventoryUI : MonoBehaviour
     void UpdateMoneyDisplay(int money)
     {
         if (moneyText != null)
-        {
             moneyText.text = money.ToString();
-        }
     }
 }

@@ -316,50 +316,46 @@ public class PlayerFarming : MonoBehaviour
     }
 
     void SpawnHarvestBurst(CropData data, Vector3 position)
-    {
-        if (data.harvestPrefab == null)
         {
-            Debug.LogWarning($"No harvest prefab for {data.cropName}!");
-            return;
-        }
+            if (data.harvestPrefab == null) return;
 
-        int count = Random.Range(
-            data.minHarvestAmount,
-            data.maxHarvestAmount + 1
-        );
-
-        for (int i = 0; i < count; i++)
-        {
-            GameObject item = Instantiate(
-                data.harvestPrefab,
-                position,
-                Quaternion.identity
+            int count = Random.Range(
+                data.minHarvestAmount,
+                data.maxHarvestAmount + 1
             );
 
-            Rigidbody2D rb = item.GetComponent<Rigidbody2D>();
-            if (rb != null)
+            for (int i = 0; i < count; i++)
             {
-                rb.gravityScale = 0f;
-                rb.drag = 5f;
-                rb.angularDrag = 5f;
-
-                Vector2 dir = Random.insideUnitCircle;
-                dir.y = Mathf.Abs(dir.y);
-
-                rb.AddForce(
-                    dir.normalized * data.burstForce,
-                    ForceMode2D.Impulse
+                GameObject item = Instantiate(
+                    data.harvestPrefab,
+                    position,
+                    Quaternion.identity
                 );
 
-                rb.AddTorque(
-                    Random.Range(-data.burstTorque, data.burstTorque),
-                    ForceMode2D.Impulse
-                );
+                Rigidbody2D rb = item.GetComponent<Rigidbody2D>();
+                if (rb != null)
+                {
+                    rb.gravityScale = 0f;
+                    rb.drag = 5f;
+                    rb.angularDrag = 5f;
+
+                    Vector2 dir = Random.insideUnitCircle;
+                    dir.y = Mathf.Abs(dir.y);
+
+                    rb.AddForce(
+                        dir.normalized * data.burstForce,
+                        ForceMode2D.Impulse
+                    );
+
+                    rb.AddTorque(
+                        Random.Range(-data.burstTorque, data.burstTorque),
+                        ForceMode2D.Impulse
+                    );
+                }
+
+                Destroy(item, data.harvestDespawnTime);
             }
-
-            Destroy(item, data.harvestDespawnTime);
         }
-    }
 
     // =========================
     // PUBLIC HELPERS

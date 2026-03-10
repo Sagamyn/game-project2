@@ -6,7 +6,9 @@ public class PlayerInventory : InventoryBase
 
     void Awake()
     {
+        // CRITICAL: Initialize immediately in Awake, not Start
         Initialize();
+        Debug.Log($"PlayerInventory.Awake() - Initialized with {items.Count} slots");
     }
 
     void Initialize()
