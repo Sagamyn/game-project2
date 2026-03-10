@@ -5,7 +5,7 @@ public class HotbarUI : MonoBehaviour
     public Hotbar hotbar;
     public HotbarSlotUI[] slots;
     public PlayerInventory inventory;
-
+    // return UI from hotbar.cs
     void Start()
     {
         if (inventory != null)
@@ -25,9 +25,20 @@ public class HotbarUI : MonoBehaviour
         for (int i = 0; i < slots.Length; i++)
         {
             ItemData item = hotbar.GetSlot(i);
-            int amount = item != null ? inventory.GetAmount(item) : 0;
+            if(item != null)
+            {
+                int amount = inventory.GetAmount(item);
+                if(amount <= 0)
+                {
+                    hotbar.ClearSlot(i);
+                    slots[i].Set(null, 0);
+                    continue;
+                }
+                slots[i].Set(item, amount);
+            }
+            // ItemData item = hotbar.GetSlot(i);
+            // int amount = item != null ? inventory.GetAmount(item) : 0;
 
-            slots[i].Set(item, amount);
         }
 
         RefreshSelection();

@@ -4,6 +4,9 @@ public class Chest : Interactable
 {
     public ChestInventory chestInventory;
     public ChestUIController chestUI;
+    public PlayerToolController playerToolController;
+    public ToolItem tool;
+    public ToolType toolType;
 
     bool isOpen;
 
@@ -42,6 +45,14 @@ public class Chest : Interactable
 
         isOpen = true;
         chestUI.Open(chestInventory);
+
+        // if(playerToolController.useTool is ToolItem tool)
+        // {
+        //     if(tool.toolType == ToolType.Hoe)
+        //     {
+        //         Debug.Log("kontoooolll");
+        //     }
+        // }
 
         PlayerMovement.Instance?.LockMovement(true);
 
