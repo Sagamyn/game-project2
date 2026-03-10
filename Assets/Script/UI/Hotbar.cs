@@ -105,6 +105,18 @@ public class Hotbar : MonoBehaviour
         if (index < 0 || index >= slots.Length)
             return;
 
+        // cek apakah item sudah ada dihotbar, kalau iya, clear slot lama untuk mencegah dupe
+        if(item != null)
+        {
+            for(int i=0; i<slots.Length; i++)
+            {
+                if(i != index && slots[i] == item)
+                {
+                    slots[i] = null;
+                    Debug.Log($"Hotbar: cleared duplicate item {item.itemName} from slot {i}");
+                }
+            }
+        }
         slots[index] = item;
 
         if (hotbarUI != null)
@@ -143,7 +155,7 @@ public class Hotbar : MonoBehaviour
 
         for (int i = 0; i < slots.Length; i++)
         {
-            if (slots[i] != null) continue;
+            if (slots[i] == null) continue;
             // cek qty item di inventory
             int amount = playerInventory.GetAmount(slots[i]);
             // clear slot jika item qty <= 0

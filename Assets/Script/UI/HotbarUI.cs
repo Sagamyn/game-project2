@@ -35,6 +35,8 @@ public class HotbarUI : MonoBehaviour
                     continue;
                 }
                 slots[i].Set(item, amount);
+            } else {
+                slots[i].Set(null, 0);
             }
             // ItemData item = hotbar.GetSlot(i);
             // int amount = item != null ? inventory.GetAmount(item) : 0;
