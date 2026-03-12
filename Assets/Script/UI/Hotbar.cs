@@ -3,7 +3,7 @@ using UnityEngine;
 public class Hotbar : MonoBehaviour
 {
     [Header("Slots")]
-    public ItemData[] slots = new ItemData[4];
+    public ItemData[] slots = new ItemData[10];
 
     [Header("Selection")]
     public int selectedIndex;
@@ -47,6 +47,12 @@ public class Hotbar : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha2)) Select(1);
         if (Input.GetKeyDown(KeyCode.Alpha3)) Select(2);
         if (Input.GetKeyDown(KeyCode.Alpha4)) Select(3);
+        if (Input.GetKeyDown(KeyCode.Alpha5)) Select(4);
+        if (Input.GetKeyDown(KeyCode.Alpha6)) Select(5);  
+        if (Input.GetKeyDown(KeyCode.Alpha7)) Select(6);  
+        if (Input.GetKeyDown(KeyCode.Alpha8)) Select(7);  
+        if (Input.GetKeyDown(KeyCode.Alpha9)) Select(8);  
+        if (Input.GetKeyDown(KeyCode.Alpha0)) Select(9); 
 
         HandleScroll();
     }
@@ -62,8 +68,8 @@ public class Hotbar : MonoBehaviour
 
         lastScrollTime = Time.time;
 
-        if (scroll > 0) SelectNext();
-        else SelectPrevious();
+        if (scroll > 0) SelectPrevious();
+        else SelectNext();
     }
 
     void SelectNext()

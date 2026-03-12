@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1241753911419672674}
   - component: {fileID: 8756241650694383150}
-  - component: {fileID: 2195831098018103880}
   - component: {fileID: 5055290765972150723}
   - component: {fileID: -3954202078877380106}
   m_Layer: 0
@@ -87,33 +86,6 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!50 &2195831098018103880
-Rigidbody2D:
-  serializedVersion: 4
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4614399586432625689}
-  m_BodyType: 1
-  m_Simulated: 1
-  m_UseFullKinematicContacts: 1
-  m_UseAutoMass: 0
-  m_Mass: 1
-  m_LinearDrag: 5
-  m_AngularDrag: 5
-  m_GravityScale: 1
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_Interpolate: 1
-  m_SleepingMode: 1
-  m_CollisionDetection: 1
-  m_Constraints: 4
 --- !u!114 &5055290765972150723
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,7 +109,7 @@ MonoBehaviour:
   bobHeight: 0.2
   pickupSound: {fileID: 0}
   showNotification: 1
-  pickupGracePeriod: 1
+  pickupGracePeriod: 0
 --- !u!58 &-3954202078877380106
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -167,7 +139,7 @@ CircleCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
