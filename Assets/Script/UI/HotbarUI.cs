@@ -22,20 +22,23 @@ public class HotbarUI : MonoBehaviour
 
     public void Refresh()
     {
-        for (int i = 0; i < slots.Length; i++)
+        int threshold = 10;
+        for (int i = 0; i < threshold; i++)
         {
-            ItemData item = hotbar.GetSlot(i);
-            if(item != null)
+            ItemData item = inventory.items[i].item;
+            if (item != null)
             {
                 int amount = inventory.GetAmount(item);
-                if(amount <= 0)
+                if (amount <= 0)
                 {
                     hotbar.ClearSlot(i);
                     slots[i].Set(null, 0);
                     continue;
                 }
                 slots[i].Set(item, amount);
-            } else {
+            }
+            else
+            {
                 slots[i].Set(null, 0);
             }
             // ItemData item = hotbar.GetSlot(i);

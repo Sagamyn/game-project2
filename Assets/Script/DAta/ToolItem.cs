@@ -18,5 +18,11 @@ public class ToolItem : ItemData
 
     [Header("Watering Can")]
     public int maxWater = 10;
+
+    // public bool IsSoilTool()
+    // {
+    //     return toolType == ToolType.Hoe || toolType == ToolType.WateringCan;
+    // }
+
 }
 

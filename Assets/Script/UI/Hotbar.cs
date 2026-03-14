@@ -4,6 +4,7 @@ public class Hotbar : MonoBehaviour
 {
     [Header("Slots")]
     public ItemData[] slots = new ItemData[10];
+    private const int HotbarSize = 10;
 
     [Header("Selection")]
     public int selectedIndex;
@@ -17,9 +18,10 @@ public class Hotbar : MonoBehaviour
     public float scrollCooldown = 0.1f;
     float lastScrollTime;
 
+
     public ItemData SelectedItem =>
-        (selectedIndex >= 0 && selectedIndex < slots.Length)
-            ? slots[selectedIndex]
+        (selectedIndex >= 0 && selectedIndex < HotbarSize && playerInventory != null)
+            ? playerInventory.items[selectedIndex].item
             : null;
 
     void Start()
@@ -31,6 +33,14 @@ public class Hotbar : MonoBehaviour
         }
 
         UpdateSelection();
+    }
+
+    void Awake()
+    {
+        if (playerFarming == null)
+        {
+            playerFarming = FindObjectOfType<PlayerFarming>();
+        }
     }
 
     void OnDestroy()
@@ -48,11 +58,11 @@ public class Hotbar : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha3)) Select(2);
         if (Input.GetKeyDown(KeyCode.Alpha4)) Select(3);
         if (Input.GetKeyDown(KeyCode.Alpha5)) Select(4);
-        if (Input.GetKeyDown(KeyCode.Alpha6)) Select(5);  
-        if (Input.GetKeyDown(KeyCode.Alpha7)) Select(6);  
-        if (Input.GetKeyDown(KeyCode.Alpha8)) Select(7);  
-        if (Input.GetKeyDown(KeyCode.Alpha9)) Select(8);  
-        if (Input.GetKeyDown(KeyCode.Alpha0)) Select(9); 
+        if (Input.GetKeyDown(KeyCode.Alpha6)) Select(5);
+        if (Input.GetKeyDown(KeyCode.Alpha7)) Select(6);
+        if (Input.GetKeyDown(KeyCode.Alpha8)) Select(7);
+        if (Input.GetKeyDown(KeyCode.Alpha9)) Select(8);
+        if (Input.GetKeyDown(KeyCode.Alpha0)) Select(9);
 
         HandleScroll();
     }
@@ -60,7 +70,7 @@ public class Hotbar : MonoBehaviour
     void HandleScroll()
     {
         float scroll = Input.mouseScrollDelta.y;
-        if (scroll == 0) 
+        if (scroll == 0)
             return;
 
         if (Time.time - lastScrollTime < scrollCooldown)
@@ -74,17 +84,17 @@ public class Hotbar : MonoBehaviour
 
     void SelectNext()
     {
-        Select((selectedIndex + 1) % slots.Length);
+        Select((selectedIndex + 1) % HotbarSize);
     }
 
     void SelectPrevious()
     {
-        Select((selectedIndex - 1 + slots.Length) % slots.Length);
+        Select((selectedIndex - 1 + HotbarSize) % HotbarSize);
     }
 
     public void Select(int index)
     {
-        if (index < 0 || index >= slots.Length)
+        if (index < 0 || index >= HotbarSize)
             return;
 
         selectedIndex = index;
@@ -93,6 +103,11 @@ public class Hotbar : MonoBehaviour
 
     void UpdateSelection()
     {
+        Debug.Log($"selectedIndex: {selectedIndex}");
+        Debug.Log($"playerInventory null: {playerInventory == null}");
+        Debug.Log($"playerInventory.items count: {playerInventory?.items.Count}");
+        Debug.Log($"item at index: {playerInventory?.items[selectedIndex]?.item}");
+
         if (playerFarming != null)
             playerFarming.selectedItem = SelectedItem;
 
@@ -108,22 +123,25 @@ public class Hotbar : MonoBehaviour
 
     public void SetSlot(int index, ItemData item)
     {
-        if (index < 0 || index >= slots.Length)
+        if (index < 0 || index >= HotbarSize)
             return;
 
         // cek apakah item sudah ada dihotbar, kalau iya, clear slot lama untuk mencegah dupe
-        if(item != null)
+        if (item != null)
         {
-            for(int i=0; i<slots.Length; i++)
+            for (int i = 0; i < HotbarSize; i++)
             {
-                if(i != index && slots[i] == item)
+                if (i != index && playerInventory.items[i].item == item)
                 {
-                    slots[i] = null;
+                    playerInventory.items[i].item = null;
+                    playerInventory.items[i].amount = 0;
+                    playerInventory.NotifyChanged();
                     Debug.Log($"Hotbar: cleared duplicate item {item.itemName} from slot {i}");
                 }
             }
         }
-        slots[index] = item;
+        playerInventory.items[index].item = item;
+        playerInventory.NotifyChanged();
 
         if (hotbarUI != null)
             hotbarUI.Refresh();
@@ -133,10 +151,12 @@ public class Hotbar : MonoBehaviour
 
     public void ClearSlot(int index)
     {
-        if (index < 0 || index >= slots.Length)
+        if (index < 0 || index >= HotbarSize)
             return;
 
-        slots[index] = null;
+        playerInventory.items[index].item = null;
+        playerInventory.items[index].amount = 0;
+        playerInventory.NotifyChanged();
 
         if (hotbarUI != null)
             hotbarUI.Refresh();
@@ -146,10 +166,10 @@ public class Hotbar : MonoBehaviour
 
     public ItemData GetSlot(int index)
     {
-        if (index < 0 || index >= slots.Length)
+        if (index < 0 || index >= HotbarSize)
             return null;
-
-        return slots[index];
+        if (playerInventory == null) return null;
+        return playerInventory.items[index].item;
     }
 
     // Check if hotbar items still exist in player inventory
@@ -159,18 +179,19 @@ public class Hotbar : MonoBehaviour
 
         bool changed = false;
 
-        for (int i = 0; i < slots.Length; i++)
+        for (int i = 0; i < HotbarSize; i++)
         {
-            if (slots[i] == null) continue;
+            if (playerInventory.items[i].item == null) continue;
             // cek qty item di inventory
-            int amount = playerInventory.GetAmount(slots[i]);
+            int amount = playerInventory.GetAmount(playerInventory.items[i].item);
             // clear slot jika item qty <= 0
-            if(amount <= 0) {
-                Debug.Log($"Hotbar : clearing slot {i} {{ slots[i].itemName }} - no longer in inventory");
-                slots[i] = null;
+            if (amount <= 0)
+            {
+                Debug.Log($"Hotbar : clearing slot {i} {{ playerInventory.items[i].item?.itemName }} - no longer in inventory");
+                playerInventory.items[i].item = null;
                 changed = true;
 
-                if(i == selectedIndex && playerFarming != null)
+                if (i == selectedIndex && playerFarming != null)
                     playerFarming.selectedItem = null;
             }
             // original code, cek keberadaan item di inventory
@@ -190,13 +211,15 @@ public class Hotbar : MonoBehaviour
 
         if (changed && hotbarUI != null)
             hotbarUI.Refresh();
+        if (changed)
+            UpdateSelection();
     }
 
     public void ClearSlotsContaining(ItemData item)
     {
         bool cleared = false;
 
-        for (int i = 0; i < slots.Length; i++)
+        for (int i = 0; i < HotbarSize; i++)
         {
             if (slots[i] == item)
             {

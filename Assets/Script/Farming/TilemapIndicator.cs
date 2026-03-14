@@ -8,6 +8,7 @@ public class TilemapIndicator : MonoBehaviour
     public Tilemap referenceTilemap;   // Assign GroundTilemap
     public Transform player;
     public Animator playerAnimator;
+    public PlayerFarming playerFarming;
 
     [Header("Settings")]
     public Vector2 feetOffset = new Vector2(0, -0.25f);
@@ -59,7 +60,7 @@ public class TilemapIndicator : MonoBehaviour
     void UpdateVisibility()
     {
         sr.enabled = showOnlyWhenPressE
-            ? Input.GetKey(KeyCode.E)
+            ? Input.GetKey(KeyCode.E) && playerFarming.selectedItem != null
             : true;
     }
 }
