@@ -64897,7 +64897,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 621094712}
   m_HandleRect: {fileID: 621094711}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -67358,7 +67358,7 @@ MonoBehaviour:
   selectedIndex: 0
   playerFarming: {fileID: 1730039561}
   hotbarUI: {fileID: 1371626379}
-  playerInventory: {fileID: 0}
+  playerInventory: {fileID: 1730039564}
   scrollCooldown: 0.1
 --- !u!114 &1730039566
 MonoBehaviour:
