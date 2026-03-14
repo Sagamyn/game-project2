@@ -56,5 +56,4 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Untitled Gims.sln"
 }

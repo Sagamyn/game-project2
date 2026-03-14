@@ -58,7 +58,7 @@ public class PlayerInventory : InventoryBase
 
         Debug.LogWarning("Player inventory is full!");
         return false;
-    }   
+    }
 
     public override void ConsumeItem(ItemData item, int amount)
     {
