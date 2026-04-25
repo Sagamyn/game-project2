@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "game-project2.sln"
+    "dotnet.defaultSolution": "Untitled Gims.sln"
 }

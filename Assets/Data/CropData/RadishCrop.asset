@@ -14,7 +14,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cropName: Radish
   cropIcon: {fileID: 0}
-  growthStages: []
+  growthStages:
+  - stageName: 1
+    stageTile: {fileID: 11400000, guid: fa3b804d2238f4b4b918d4d286ed78f8, type: 2}
+    timeToNextStage: 5
+    requiresWaterThisStage: 1
+  - stageName: 2
+    stageTile: {fileID: 11400000, guid: 8a976fc10c03d514f97fab12308381c7, type: 2}
+    timeToNextStage: 5
+    requiresWaterThisStage: 0
+  - stageName: 3
+    stageTile: {fileID: 11400000, guid: ce3e7c246489f3a43a3b1daf32dd3411, type: 2}
+    timeToNextStage: 5
+    requiresWaterThisStage: 0
+  - stageName: 4
+    stageTile: {fileID: 11400000, guid: 6755920f75eb37143a663c9f9783b384, type: 2}
+    timeToNextStage: 5
+    requiresWaterThisStage: 0
+  - stageName: 5
+    stageTile: {fileID: 11400000, guid: 46dee0b1d0edf2c48815e814057081e4, type: 2}
+    timeToNextStage: 0
+    requiresWaterThisStage: 0
   harvestPrefab: {fileID: 4280372638137824680, guid: b131f56aeaf8c7f4198e0cc0e5a177e3, type: 3}
   minHarvestAmount: 1
   maxHarvestAmount: 3
