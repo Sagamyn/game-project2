@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class PlayerActionController : MonoBehaviour
 {
@@ -7,46 +8,72 @@ public class PlayerActionController : MonoBehaviour
     public DialogueManager dialogue;
     public PlayerToolController toolController;
     public Hotbar hotbar;
+    public Camera mainCamera;
+
+    [Header("Harvest Click Settings")]
+    [Tooltip("Layer that contains your crop tilemap colliders, or leave empty to use world position")]
+    public Tilemap cropTilemap;   // assign your crop tilemap here
+
+    void Awake()
+    {
+        if (mainCamera == null)
+            mainCamera = Camera.main;
+    }
 
     void Update()
     {
-        if (!Input.GetKeyDown(KeyCode.E))
-            return;
-
-        // Dialogue blocks everything
         if (dialogue != null && dialogue.IsOpen)
             return;
 
-        // Hotbar check
-        if (hotbar == null)
-        {
-            Debug.LogError("PlayerActionController: Hotbar is NULL");
-            return;
-        }
+        if (hotbar == null) return;
 
         ItemData selected = hotbar.SelectedItem;
 
-        // Tool usage
-        if (selected is ToolItem tool)
+        // ── LEFT CLICK: harvest with Hoe ──────────────────────────────
+        if (selected is ToolItem tool && tool.toolType == ToolType.Hoe)
         {
-            if (toolController == null)
+            if (Input.GetMouseButtonDown(0))
             {
-                Debug.LogError("PlayerActionController: ToolController is NULL");
-                return;
+                TryHarvestAtIndicator();
             }
+        }
 
-            toolController.UseTool(tool);
+        // ── E KEY: existing tool use / planting ───────────────────────
+        if (!Input.GetKeyDown(KeyCode.E))
+            return;
+
+        if (selected is ToolItem toolE)
+        {
+            if (toolController == null) return;
+            toolController.UseTool(toolE);
             return;
         }
 
-        // Farming (seeds / harvesting)
+        // Seeds / harvesting via E (kept as fallback)
         if (farming != null)
-        {
             farming.TryFarm();
-        }
-        else
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+    // Harvest at the indicator tile (same target as tilling / planting)
+    // ─────────────────────────────────────────────────────────────────
+    void TryHarvestAtIndicator()
+    {
+        if (farming == null) return;
+
+        // Use the indicator position — exactly the same cell the E-key actions use
+        if (farming.indicator == null)
         {
-            Debug.LogError("PlayerActionController: Farming is NULL");
+            Debug.LogWarning("[PlayerActionController] No indicator assigned on PlayerFarming!");
+            return;
         }
+
+        Tilemap referenceTilemap = farming.soilTilemap != null ? farming.soilTilemap : cropTilemap;
+        if (referenceTilemap == null) return;
+
+        // indicator.transform.position is already snapped to tile center
+        Vector3Int cell = referenceTilemap.WorldToCell(farming.indicator.transform.position);
+
+        farming.TryHarvestAtCell(cell);
     }
 }

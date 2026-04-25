@@ -1,20 +1,16 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-/// <summary>
-/// Enhanced crop with multiple growth stages
-/// Each crop can have different number of stages (seeds, sprout, etc.)
-/// </summary>
 public class Crop
 {
     public CropData cropData;
     public Vector3Int cellPosition;
-    public int currentStage = 0; // 0 = first stage (seed)
-    public float stageProgress = 0f; // Days in current stage
-    
+    public int currentStage = 0;
+    public float stageTimer = 0f;
+
     private bool isWatered = false;
     private int dayPlanted = 0;
-    
+
     public bool IsWatered => isWatered;
     public bool IsFullyGrown => currentStage >= cropData.GetTotalStages() - 1;
     public bool IsHarvestable => IsFullyGrown;
@@ -23,8 +19,8 @@ public class Crop
     {
         cropData = data;
         cellPosition = cell;
-        currentStage = 0; // Start at seed stage
-        stageProgress = 0f;
+        currentStage = 0;
+        stageTimer = 0f;
         dayPlanted = plantedDay;
         isWatered = false;
     }
@@ -34,105 +30,73 @@ public class Crop
         isWatered = true;
     }
 
-    // Called at the start of each new day
-    public bool GrowForNewDay(Tilemap cropTilemap)
+    /// <summary>
+    /// Call every frame from PlayerFarming.Update().
+    /// Returns true if the crop advanced to a new stage this frame.
+    /// </summary>
+    public bool Tick(float deltaTime, Tilemap cropTilemap)
     {
-        bool grewThisDay = false;
+        if (IsFullyGrown) return false;
 
-        // Check if this stage requires water
-        if (cropData.growthStages[currentStage].requiresWaterThisStage)
+        CropStageData stage = cropData.growthStages[currentStage];
+
+        // Pause growth if water is required but crop is dry
+        if (stage.requiresWaterThisStage && !isWatered) return false;
+
+        // Safety: stage with 0 time never auto-advances
+        if (stage.timeToNextStage <= 0f) return false;
+
+        stageTimer += deltaTime;
+
+        if (stageTimer >= stage.timeToNextStage)
         {
-            if (!isWatered)
-            {
-                Debug.Log($"Crop at {cellPosition} didn't grow - not watered");
-                isWatered = false; // Reset water status
-                return false;
-            }
+            stageTimer = 0f;
+            currentStage++;
+
+            Debug.Log($"[Crop] {cropData.cropName} at {cellPosition} -> stage {currentStage}: {cropData.GetStageName(currentStage)}");
+
+            UpdateVisual(cropTilemap);
+            return true;
         }
 
-        // Grow!
-        stageProgress += 1f; // +1 day
-
-        // Check if ready for next stage
-        float daysNeeded = cropData.growthStages[currentStage].timeToNextStage;
-        
-        if (stageProgress >= daysNeeded)
-        {
-            if (currentStage < cropData.GetTotalStages() - 1)
-            {
-                // Advance to next stage
-                currentStage++;
-                stageProgress = 0f;
-                grewThisDay = true;
-                
-                Debug.Log($"🌱 Crop advanced to stage {currentStage}: {cropData.GetStageName(currentStage)}");
-                
-                // Update visual
-                UpdateVisual(cropTilemap);
-            }
-        }
-
-        // Reset water status for next day
-        isWatered = false;
-
-        return grewThisDay;
+        return false;
     }
 
     public void UpdateVisual(Tilemap cropTilemap)
     {
-        TileBase stageTile = cropData.GetStageVisual(currentStage);
-        
-        if (stageTile != null)
-        {
-            cropTilemap.SetTile(cellPosition, stageTile);
-        }
+        TileBase tile = cropData.GetStageVisual(currentStage);
+        if (tile != null)
+            cropTilemap.SetTile(cellPosition, tile);
         else
-        {
-            Debug.LogWarning($"No tile for stage {currentStage} of {cropData.cropName}");
-        }
+            Debug.LogWarning($"[Crop] No tile for stage {currentStage} of {cropData.cropName}");
     }
 
     public string GetStageInfo()
     {
-        string stageName = cropData.GetStageName(currentStage);
-        float daysNeeded = cropData.growthStages[currentStage].timeToNextStage;
-        float daysRemaining = daysNeeded - stageProgress;
-        
         if (IsFullyGrown)
-        {
-            return $"{cropData.cropName} - Ready to Harvest! 🌾";
-        }
-        else
-        {
-            return $"{cropData.cropName} - {stageName} ({daysRemaining:F1} days to next stage)";
-        }
+            return $"{cropData.cropName} — Ready to harvest!";
+
+        float needed = cropData.growthStages[currentStage].timeToNextStage;
+        float remaining = Mathf.Max(0f, needed - stageTimer);
+        string stageName = cropData.GetStageName(currentStage);
+        return $"{cropData.cropName} — {stageName} ({remaining:F1}s left)";
     }
 
-    public int GetCurrentStage()
-    {
-        return currentStage;
-    }
-
-    public int GetTotalStages()
-    {
-        return cropData.GetTotalStages();
-    }
+    public int GetCurrentStage() => currentStage;
+    public int GetTotalStages() => cropData.GetTotalStages();
 
     public float GetGrowthPercentage()
     {
         if (cropData.GetTotalStages() == 0) return 0f;
-        
-        // Calculate overall progress
-        float completedStages = currentStage;
+
         float currentStageProgress = 0f;
-        
         if (currentStage < cropData.growthStages.Length)
         {
-            float daysNeeded = cropData.growthStages[currentStage].timeToNextStage;
-            currentStageProgress = stageProgress / daysNeeded;
+            float needed = cropData.growthStages[currentStage].timeToNextStage;
+            if (needed > 0f)
+                currentStageProgress = stageTimer / needed;
         }
-        
-        float totalProgress = (completedStages + currentStageProgress) / cropData.GetTotalStages();
-        return Mathf.Clamp01(totalProgress);
+
+        return Mathf.Clamp01((currentStage + currentStageProgress) / cropData.GetTotalStages());
     }
 }
