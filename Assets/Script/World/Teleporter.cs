@@ -1,10 +1,10 @@
 using UnityEngine;
 using System.Collections;
 
-
 [RequireComponent(typeof(BoxCollider2D))]
 public class Teleporter : MonoBehaviour
 {
+    // ── Destination ──────────────────────────────────────────────────────
     [Header("Teleport Destination")]
     [Tooltip("Where the player teleports to")]
     public Transform destinationPoint;
@@ -14,21 +14,33 @@ public class Teleporter : MonoBehaviour
     public bool useCoordinates = false;
     public Vector2 targetPosition = Vector2.zero;
 
+    // ── Interaction Mode ─────────────────────────────────────────────────
+    [Header("Interaction Mode")]
+    [Tooltip("OFF = auto-teleport on walk-in (original behaviour)\nON  = player must press E while in range (door mode)")]
+    public bool requireInteraction = false;
+
+    [Tooltip("Animator on the interaction-bubble child (optional). Needs a 'ShowBubble' bool.")]
+    public Animator bubbleAnimator;
+
+    // ── Player Settings ──────────────────────────────────────────────────
     [Header("Player Settings")]
     [Tooltip("Direction player should face after teleport")]
     public TeleportDirection facingDirection = TeleportDirection.Down;
 
+    // ── Walk-In Animation ────────────────────────────────────────────────
     [Header("Walk-In Animation")]
     [Tooltip("Should player walk in after teleporting?")]
     public bool walkInAfterTeleport = true;
     public float walkInDistance = 1f;
     public float walkInSpeed = 3f;
 
+    // ── Lock Player ──────────────────────────────────────────────────────
     [Header("Lock Player")]
     [Tooltip("Disable player control during teleport")]
     public bool lockPlayerDuringTeleport = true;
     public float lockDuration = 0.3f;
 
+    // ── Fade Transition ──────────────────────────────────────────────────
     [Header("Fade Transition")]
     [Tooltip("Fade screen to black during teleport")]
     public bool useFadeTransition = true;
@@ -36,152 +48,186 @@ public class Teleporter : MonoBehaviour
     public float fadeInSpeed = 3f;
     public Color fadeColor = Color.black;
 
+    // ── Visual ───────────────────────────────────────────────────────────
     [Header("Visual")]
     public bool showGizmos = true;
     public Color gizmoColor = new Color(0f, 1f, 1f, 0.3f);
 
+    // ── Private ──────────────────────────────────────────────────────────
     private BoxCollider2D teleportCollider;
     private bool isTeleporting = false;
     private TeleportFadeManager fadeManager;
 
+    // Interaction-mode only: the player currently inside the trigger
+    private GameObject playerInRange = null;
+
+    // ─────────────────────────────────────────────────────────────────────
     void Awake()
     {
         teleportCollider = GetComponent<BoxCollider2D>();
         teleportCollider.isTrigger = true;
 
-        // Find or create fade manager
         fadeManager = FindObjectOfType<TeleportFadeManager>();
         if (fadeManager == null && useFadeTransition)
+            Debug.LogWarning($"[Teleporter] '{gameObject.name}': No TeleportFadeManager found — fade disabled.");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    void Update()
+    {
+        // Only needed in interaction (door) mode
+        if (!requireInteraction) return;
+        if (isTeleporting) return;
+        if (playerInRange == null) return;
+
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            Debug.LogWarning("No TeleportFadeManager found! Create one for fade transitions.");
+            Debug.Log($"[Teleporter] '{gameObject.name}': E pressed — starting teleport.");
+            StartTeleport(playerInRange);
         }
     }
 
+    // ─────────────────────────────────────────────────────────────────────
     void OnTriggerEnter2D(Collider2D other)
     {
+        if (!other.CompareTag("Player")) return;
         if (isTeleporting) return;
 
-        if (other.CompareTag("Player"))
+        if (requireInteraction)
         {
-            Debug.Log($"Player entered teleporter: {gameObject.name}");
+            // Door mode: register player and show prompt bubble
+            playerInRange = other.gameObject;
+            SetBubble(true);
+            Debug.Log($"[Teleporter] '{gameObject.name}': Player in range — press E to use.");
+        }
+        else
+        {
+            // Original auto-trigger mode
+            Debug.Log($"[Teleporter] '{gameObject.name}': Player entered — auto teleporting.");
             StartTeleport(other.gameObject);
         }
     }
 
+    void OnTriggerExit2D(Collider2D other)
+    {
+        if (!other.CompareTag("Player")) return;
+
+        if (requireInteraction && playerInRange == other.gameObject)
+        {
+            playerInRange = null;
+            SetBubble(false);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
     void StartTeleport(GameObject player)
     {
         Vector3 targetPos = GetTargetPosition();
 
         if (targetPos == Vector3.zero && destinationPoint == null && !useCoordinates)
         {
-            Debug.LogError($"Teleporter '{gameObject.name}' has no destination set!");
+            Debug.LogError($"[Teleporter] '{gameObject.name}' has no destination set!");
             return;
         }
 
         isTeleporting = true;
+        SetBubble(false); // hide prompt during teleport
         StartCoroutine(TeleportCoroutine(player, targetPos));
     }
 
+    // ─────────────────────────────────────────────────────────────────────
     IEnumerator TeleportCoroutine(GameObject player, Vector3 targetPos)
     {
         PlayerMovement movement = player.GetComponent<PlayerMovement>();
 
         // Lock player movement
         if (lockPlayerDuringTeleport && movement != null)
-        {
             movement.enabled = false;
-        }
 
         // Fade out
         if (useFadeTransition && fadeManager != null)
-        {
             yield return StartCoroutine(fadeManager.FadeOut(fadeOutSpeed, fadeColor));
-        }
         else
-        {
-            // Wait a moment if no fade
             yield return new WaitForSeconds(lockDuration);
-        }
 
-        // Teleport player
+        // Move player
         if (walkInAfterTeleport)
         {
-            // Calculate walk-in start position
             Vector3 walkInStart = targetPos - GetDirectionVector() * walkInDistance;
             player.transform.position = walkInStart;
 
-            // Fade in first
             if (useFadeTransition && fadeManager != null)
-            {
                 yield return StartCoroutine(fadeManager.FadeIn(fadeInSpeed));
-            }
 
-            // Then walk player in
             yield return StartCoroutine(WalkPlayerIn(player, targetPos));
         }
         else
         {
-            // Instant teleport
             player.transform.position = targetPos;
 
-            // Fade in
             if (useFadeTransition && fadeManager != null)
-            {
                 yield return StartCoroutine(fadeManager.FadeIn(fadeInSpeed));
-            }
         }
 
-        // Re-enable player movement
+        // Re-enable player
         if (movement != null)
-        {
             movement.enabled = true;
-        }
 
         isTeleporting = false;
-        Debug.Log($"Teleport complete to {targetPos}");
+        Debug.Log($"[Teleporter] '{gameObject.name}': Teleport complete → {targetPos}");
     }
 
+    // ─────────────────────────────────────────────────────────────────────
     IEnumerator WalkPlayerIn(GameObject player, Vector3 targetPos)
     {
         Vector3 direction = GetDirectionVector();
 
         while (Vector3.Distance(player.transform.position, targetPos) > 0.1f)
         {
-            player.transform.position += direction * walkInSpeed * Time.deltaTime;
+            player.transform.position = Vector3.MoveTowards(
+                player.transform.position,
+                targetPos,
+                walkInSpeed * Time.deltaTime
+            );
             yield return null;
         }
 
         player.transform.position = targetPos;
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    void SetBubble(bool show)
+    {
+        if (bubbleAnimator != null)
+            bubbleAnimator.SetBool("ShowBubble", show);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
     Vector3 GetTargetPosition()
     {
         if (destinationPoint != null)
-        {
             return destinationPoint.position;
-        }
         else if (useCoordinates)
-        {
             return new Vector3(targetPosition.x, targetPosition.y, 0);
-        }
         else
-        {
             return Vector3.zero;
-        }
     }
 
     Vector3 GetDirectionVector()
     {
         return facingDirection switch
         {
-            TeleportDirection.Up => Vector3.up,
-            TeleportDirection.Down => Vector3.down,
-            TeleportDirection.Left => Vector3.left,
+            TeleportDirection.Up    => Vector3.up,
+            TeleportDirection.Down  => Vector3.down,
+            TeleportDirection.Left  => Vector3.left,
             TeleportDirection.Right => Vector3.right,
-            _ => Vector3.down
+            _                      => Vector3.down
         };
     }
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Gizmos
+    // ─────────────────────────────────────────────────────────────────────
     void OnDrawGizmos()
     {
         if (!showGizmos) return;
@@ -189,22 +235,22 @@ public class Teleporter : MonoBehaviour
         BoxCollider2D col = GetComponent<BoxCollider2D>();
         if (col == null) return;
 
-        // Draw teleporter area
-        Gizmos.color = gizmoColor;
+        // Colour changes based on mode so you can tell them apart in the scene
+        Color baseColor = requireInteraction
+            ? new Color(1f, 0.6f, 0f, 0.25f)   // orange = door / interaction mode
+            : gizmoColor;                        // cyan   = auto-trigger mode
+
+        Gizmos.color = baseColor;
         Gizmos.DrawCube(col.bounds.center, col.bounds.size);
 
-        // Draw border
-        Gizmos.color = new Color(gizmoColor.r, gizmoColor.g, gizmoColor.b, 1f);
+        Gizmos.color = new Color(baseColor.r, baseColor.g, baseColor.b, 1f);
         DrawBorder(col.bounds);
 
-        // Draw arrow to destination
         Vector3 targetPos = GetTargetPosition();
         if (targetPos != Vector3.zero)
         {
-            Gizmos.color = Color.cyan;
+            Gizmos.color = requireInteraction ? Color.yellow : Color.cyan;
             Gizmos.DrawLine(transform.position, targetPos);
-            
-            // Draw destination marker
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(targetPos, 0.5f);
         }
@@ -216,19 +262,19 @@ public class Teleporter : MonoBehaviour
         if (targetPos == Vector3.zero) return;
 
 #if UNITY_EDITOR
-        // Draw label
         GUIStyle style = new GUIStyle();
-        style.normal.textColor = Color.cyan;
-        style.fontSize = 12;
-        style.fontStyle = FontStyle.Bold;
+        style.fontSize   = 12;
+        style.fontStyle  = FontStyle.Bold;
 
+        style.normal.textColor = requireInteraction ? Color.yellow : Color.cyan;
         UnityEditor.Handles.Label(
             transform.position + Vector3.up * 1f,
-            $"Teleporter\n→ ({targetPos.x}, {targetPos.y})",
+            requireInteraction
+                ? $"Door Teleporter (E)\n→ ({targetPos.x:F1}, {targetPos.y:F1})"
+                : $"Teleporter (Auto)\n→ ({targetPos.x:F1}, {targetPos.y:F1})",
             style
         );
 
-        // Draw destination label
         style.normal.textColor = Color.green;
         UnityEditor.Handles.Label(
             targetPos + Vector3.up * 1f,
@@ -240,15 +286,15 @@ public class Teleporter : MonoBehaviour
 
     void DrawBorder(Bounds bounds)
     {
-        Vector3 topLeft = new Vector3(bounds.min.x, bounds.max.y, 0);
-        Vector3 topRight = new Vector3(bounds.max.x, bounds.max.y, 0);
-        Vector3 bottomLeft = new Vector3(bounds.min.x, bounds.min.y, 0);
+        Vector3 topLeft     = new Vector3(bounds.min.x, bounds.max.y, 0);
+        Vector3 topRight    = new Vector3(bounds.max.x, bounds.max.y, 0);
+        Vector3 bottomLeft  = new Vector3(bounds.min.x, bounds.min.y, 0);
         Vector3 bottomRight = new Vector3(bounds.max.x, bounds.min.y, 0);
 
-        Gizmos.DrawLine(topLeft, topRight);
-        Gizmos.DrawLine(topRight, bottomRight);
+        Gizmos.DrawLine(topLeft,    topRight);
+        Gizmos.DrawLine(topRight,   bottomRight);
         Gizmos.DrawLine(bottomRight, bottomLeft);
-        Gizmos.DrawLine(bottomLeft, topLeft);
+        Gizmos.DrawLine(bottomLeft,  topLeft);
     }
 }
 
