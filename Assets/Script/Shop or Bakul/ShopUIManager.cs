@@ -132,9 +132,9 @@ public class ShopUIManager : MonoBehaviour
         // Subscribe to cart changes so the summary updates automatically
         if (CartManager.Instance != null)
         {
-            CartManager.Instance.OnCartChanged      += RefreshCartSummary;
-            CartManager.Instance.OnCheckoutSuccess  += OnCheckoutSuccess;
-            CartManager.Instance.OnCheckoutFail     += OnCheckoutFail;
+            CartManager.Instance.OnCartChanged += RefreshCartSummary;
+            CartManager.Instance.OnCheckoutSuccess += OnCheckoutSuccess;
+            CartManager.Instance.OnCheckoutFail += OnCheckoutFail;
         }
     }
 
@@ -142,9 +142,9 @@ public class ShopUIManager : MonoBehaviour
     {
         if (CartManager.Instance != null)
         {
-            CartManager.Instance.OnCartChanged      -= RefreshCartSummary;
-            CartManager.Instance.OnCheckoutSuccess  -= OnCheckoutSuccess;
-            CartManager.Instance.OnCheckoutFail     -= OnCheckoutFail;
+            CartManager.Instance.OnCartChanged -= RefreshCartSummary;
+            CartManager.Instance.OnCheckoutSuccess -= OnCheckoutSuccess;
+            CartManager.Instance.OnCheckoutFail -= OnCheckoutFail;
         }
     }
 
@@ -164,7 +164,7 @@ public class ShopUIManager : MonoBehaviour
         isShopOpen = true;
 
         if (shopUIRoot != null) shopUIRoot.SetActive(true);
-        if (shopPanel != null)  shopPanel.SetActive(true);
+        if (shopPanel != null) shopPanel.SetActive(true);
 
         if (cartSummaryPanel != null) cartSummaryPanel.SetActive(true);
 
@@ -185,7 +185,7 @@ public class ShopUIManager : MonoBehaviour
         isShopOpen = false;
 
         if (shopUIRoot != null) shopUIRoot.SetActive(false);
-        if (shopPanel != null)  shopPanel.SetActive(false);
+        if (shopPanel != null) shopPanel.SetActive(false);
         if (cartSummaryPanel != null) cartSummaryPanel.SetActive(false);
 
         PlayerMovement player = FindObjectOfType<PlayerMovement>();
@@ -208,7 +208,7 @@ public class ShopUIManager : MonoBehaviour
         if (shopPanel != null && !shopPanel.activeSelf)
             shopPanel.SetActive(true);
 
-        if (buyPanel  != null) buyPanel.SetActive(buyMode);
+        if (buyPanel != null) buyPanel.SetActive(buyMode);
         if (sellPanel != null) sellPanel.SetActive(!buyMode);
 
         UpdateTabVisuals();
@@ -269,7 +269,7 @@ public class ShopUIManager : MonoBehaviour
             if (slot.item == null || slot.amount <= 0) continue;
 
             ShopItem tempShopItem = ScriptableObject.CreateInstance<ShopItem>();
-            tempShopItem.item      = slot.item;
+            tempShopItem.item = slot.item;
             tempShopItem.sellPrice = slot.item.sellPrice;
 
             CreateItemSlot(tempShopItem, isSelling: true);
@@ -365,6 +365,23 @@ public class ShopUIManager : MonoBehaviour
         }
 
         Debug.Log($"[ShopUI] Selected: {shopItem.item.itemName} | selling={isSelling}");
+    }
+
+    public void BuyItemDirectly(ShopItem shopItem, bool isSelling)
+    {
+        if (currentShop == null) return;
+        bool success = currentShop.PurchaseItem(shopItem, 1);
+
+        if (success)
+        {
+            UpdatePlayerMoneyDisplay();
+            DisplayBuyItems();
+            Debug.Log($"✅ Langsung beli: {shopItem.item.itemName}");
+        }
+        else
+        {
+            Debug.Log($"❌ Gagal membeli: {shopItem.item.itemName}");
+        }
     }
 
     /// <summary>

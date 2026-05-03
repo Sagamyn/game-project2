@@ -10,20 +10,20 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
     [Header("Shop Info")]
     public string shopName = "General Store";
     public string shopkeeperName = "Pierre";
-    
+
     [Header("Shop Inventory")]
     public List<ShopItem> shopInventory = new List<ShopItem>();
-    
+
     [Header("Interaction")]
     public float interactionRadius = 1.5f;
-    
+
     [Header("UI")]
     public GameObject shopUIManager; // Reference to ShopUI GameObject
-    
+
     [Header("Audio")]
     public AudioClip openShopSound;
     public AudioClip closeShopSound;
-    
+
     private ShopUIManager shopUI;
 
     void Start()
@@ -44,12 +44,12 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
         if (shopUI != null)
         {
             shopUI.OpenShop(this);
-            
+
             if (openShopSound != null)
             {
                 AudioSource.PlayClipAtPoint(openShopSound, transform.position);
             }
-            
+
             Debug.Log($"🏪 Opened {shopName}");
         }
         else
@@ -63,7 +63,7 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
         if (shopUI != null)
         {
             shopUI.CloseShop();
-            
+
             if (closeShopSound != null)
             {
                 AudioSource.PlayClipAtPoint(closeShopSound, transform.position);
@@ -78,7 +78,7 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
     {
         PlayerMoney playerMoney = FindObjectOfType<PlayerMoney>();
         if (playerMoney == null) return false;
-        
+
         int totalCost = shopItem.buyPrice * amount;
         return playerMoney.HasMoney(totalCost);
     }
@@ -90,7 +90,7 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
     {
         PlayerInventory inventory = FindObjectOfType<PlayerInventory>();
         PlayerMoney playerMoney = FindObjectOfType<PlayerMoney>();
-        
+
         if (inventory == null || playerMoney == null)
         {
             Debug.LogError("Player inventory or money not found!");
@@ -98,7 +98,7 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
         }
 
         int totalCost = shopItem.buyPrice * amount;
-        
+
         // Check if player can afford it
         if (!playerMoney.HasMoney(totalCost))
         {
@@ -126,7 +126,7 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
             Debug.Log($"❌ Failed to remove money!");
             return false;
         }
-        
+
         inventory.AddItem(shopItem.item, amount);
         shopItem.Purchase(amount);
 
@@ -141,7 +141,7 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
     {
         PlayerInventory inventory = FindObjectOfType<PlayerInventory>();
         PlayerMoney playerMoney = FindObjectOfType<PlayerMoney>();
-        
+
         if (inventory == null || playerMoney == null) return false;
 
         // Check if player has the item
