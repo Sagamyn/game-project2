@@ -14,12 +14,12 @@ public class ShopItemSlot : MonoBehaviour, IPointerClickHandler
     public TextMeshProUGUI itemNameText;
     public TextMeshProUGUI priceText;
     public Image background;
-    
+
     [Header("Colors")]
     public Color normalColor = Color.white;
     public Color selectedColor = Color.yellow;
     public Color hoverColor = Color.gray;
-    
+
     private ShopItem shopItem;
     private ShopUIManager shopUI;
     private bool isSelling;
@@ -29,19 +29,19 @@ public class ShopItemSlot : MonoBehaviour, IPointerClickHandler
         shopItem = item;
         shopUI = uiManager;
         isSelling = selling;
-        
+
         // Set icon
         if (itemIcon != null && item.item.icon != null)
         {
             itemIcon.sprite = item.item.icon;
         }
-        
+
         // Set name
         if (itemNameText != null)
         {
             itemNameText.text = item.item.itemName;
         }
-        
+
         // Set price
         if (priceText != null)
         {
@@ -49,7 +49,7 @@ public class ShopItemSlot : MonoBehaviour, IPointerClickHandler
             priceText.text = $"${price}";
             priceText.color = selling ? Color.green : Color.white;
         }
-        
+
         // Set background
         if (background != null)
         {
@@ -61,8 +61,8 @@ public class ShopItemSlot : MonoBehaviour, IPointerClickHandler
     {
         if (shopUI != null && shopItem != null)
         {
-            shopUI.SelectItem(shopItem, isSelling);
-            
+            shopUI.BuyItemDirectly(shopItem, isSelling);
+
             // Visual feedback
             if (background != null)
             {
