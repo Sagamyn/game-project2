@@ -3,10 +3,6 @@ using UnityEngine.UI;
 using TMPro;
 using UnityEngine.EventSystems;
 
-/// <summary>
-/// Individual item slot in the shop UI
-/// Shows item icon, name, price
-/// </summary>
 public class ShopItemSlot : MonoBehaviour, IPointerClickHandler
 {
     [Header("UI Elements")]
@@ -14,6 +10,11 @@ public class ShopItemSlot : MonoBehaviour, IPointerClickHandler
     public TextMeshProUGUI itemNameText;
     public TextMeshProUGUI priceText;
     public Image background;
+
+    [Header("Discount UI")]
+    public GameObject saleBadge;
+    public TextMeshProUGUI originalPriceText;
+    public TextMeshProUGUI discountedPriceText;
 
     [Header("Colors")]
     public Color normalColor = Color.white;
@@ -30,30 +31,60 @@ public class ShopItemSlot : MonoBehaviour, IPointerClickHandler
         shopUI = uiManager;
         isSelling = selling;
 
-        // Set icon
         if (itemIcon != null && item.item.icon != null)
-        {
             itemIcon.sprite = item.item.icon;
-        }
 
-        // Set name
         if (itemNameText != null)
-        {
             itemNameText.text = item.item.itemName;
-        }
 
-        // Set price
-        if (priceText != null)
-        {
-            int price = selling ? item.sellPrice : item.buyPrice;
-            priceText.text = $"${price}";
-            priceText.color = selling ? Color.green : Color.white;
-        }
-
-        // Set background
         if (background != null)
-        {
             background.color = normalColor;
+
+        // Discount logic
+        float discount = uiManager.currentShopDiscount;
+        bool hasDiscount = !selling && discount > 0f;
+
+        if (saleBadge != null)
+            saleBadge.SetActive(hasDiscount);
+
+        if (hasDiscount)
+        {
+            int finalPrice = Mathf.RoundToInt(item.buyPrice * (1f - discount));
+
+            if (originalPriceText != null)
+            {
+                originalPriceText.gameObject.SetActive(true);
+                originalPriceText.text = $"<s>${item.buyPrice}</s>";
+                originalPriceText.color = Color.gray;
+            }
+
+            if (discountedPriceText != null)
+            {
+                discountedPriceText.gameObject.SetActive(true);
+                discountedPriceText.text = $"${finalPrice}";
+                discountedPriceText.color = Color.yellow;
+            }
+
+            if (priceText != null)
+                priceText.gameObject.SetActive(false);
+        }
+        else
+        {
+            if (saleBadge != null)
+                saleBadge.SetActive(false);
+
+            if (originalPriceText != null)
+                originalPriceText.gameObject.SetActive(false);
+
+            if (discountedPriceText != null)
+                discountedPriceText.gameObject.SetActive(false);
+
+            if (priceText != null)
+            {
+                priceText.gameObject.SetActive(true);
+                int price = selling ? item.sellPrice : item.buyPrice;
+                priceText.text = $"${price}";
+            }
         }
     }
 
@@ -61,29 +92,23 @@ public class ShopItemSlot : MonoBehaviour, IPointerClickHandler
     {
         if (shopUI != null && shopItem != null)
         {
-            shopUI.BuyItemDirectly(shopItem, isSelling);
+            shopUI.SelectItem(shopItem, isSelling);
+            shopUI.BuyItemDirectly(shopItem, isSelling); // tambah ini
 
-            // Visual feedback
             if (background != null)
-            {
                 background.color = selectedColor;
-            }
         }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (background != null)
-        {
             background.color = hoverColor;
-        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         if (background != null)
-        {
             background.color = normalColor;
-        }
     }
 }

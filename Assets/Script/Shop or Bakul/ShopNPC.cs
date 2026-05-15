@@ -24,6 +24,10 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
     public AudioClip openShopSound;
     public AudioClip closeShopSound;
 
+    [Header("Discount")]
+    [Range(0f, 1f)]
+    public float shopDiscountPercentage = 0.2f;
+
     private ShopUIManager shopUI;
 
     void Start()
@@ -96,8 +100,8 @@ public class ShopNPC : Interactable // Changed from IInteractable to Interactabl
             Debug.LogError("Player inventory or money not found!");
             return false;
         }
-
-        int totalCost = shopItem.buyPrice * amount;
+        int totalCost = Mathf.RoundToInt(shopItem.buyPrice * (1f - shopDiscountPercentage)) * amount;
+        // int totalCost = shopItem.GetFinalBuyPrice() * amount;
 
         // Check if player can afford it
         if (!playerMoney.HasMoney(totalCost))

@@ -179,7 +179,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: c596e574ab115904f89ed2b8376def6a, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -950,6 +950,7 @@ MonoBehaviour:
   addToCartSound: {fileID: 0}
   sellSound: {fileID: 0}
   errorSound: {fileID: 0}
+  currentShopDiscount: 0
 --- !u!222 &115576486
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -38080,7 +38081,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -23}
+  m_AnchoredPosition: {x: 0, y: -23.000061}
   m_SizeDelta: {x: 0, y: -46}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &470456451
@@ -51261,7 +51262,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 10, y: 0}
+  m_AnchoredPosition: {x: 163, y: 166}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &705879520
@@ -51299,7 +51300,7 @@ MonoBehaviour:
   m_StartCorner: 0
   m_StartAxis: 0
   m_CellSize: {x: 70, y: 70}
-  m_Spacing: {x: 10, y: 10}
+  m_Spacing: {x: 30, y: 50}
   m_Constraint: 0
   m_ConstraintCount: 2
 --- !u!1 &726712530
@@ -61053,6 +61054,7 @@ MonoBehaviour:
   shopUIManager: {fileID: 115576483}
   openShopSound: {fileID: 0}
   closeShopSound: {fileID: 0}
+  shopDiscountPercentage: 0.2
 --- !u!4 &984034686
 Transform:
   m_ObjectHideFlags: 0
@@ -63762,8 +63764,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 161921999}
   - {fileID: 705879519}
+  - {fileID: 161921999}
   - {fileID: 1427436055}
   - {fileID: 823806649}
   m_Father: {fileID: 115576484}
@@ -63771,7 +63773,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 1280, y: 720}
+  m_SizeDelta: {x: 1000, y: 720}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1118104501
 MonoBehaviour:
@@ -63786,15 +63788,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6627451, g: 0.40000004, b: 0.2627451, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 70c1fd0740fae0f4bbd26924888eb637, type: 3}
-  m_Type: 0
+  m_Sprite: {fileID: 21300000, guid: c596e574ab115904f89ed2b8376def6a, type: 3}
+  m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
