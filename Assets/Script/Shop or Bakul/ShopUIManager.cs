@@ -83,6 +83,8 @@ public class ShopUIManager : MonoBehaviour
     // ─── Public Accessor (used by InventoryUI blocking check) ────
     public bool IsOpen() => isShopOpen;
 
+    public float currentShopDiscount = 0f;
+
     // ─────────────────────────────────────────────────────────────
     // UNITY LIFECYCLE
     // ─────────────────────────────────────────────────────────────
@@ -162,6 +164,8 @@ public class ShopUIManager : MonoBehaviour
     {
         currentShop = shop;
         isShopOpen = true;
+
+        currentShopDiscount = shop.shopDiscountPercentage;
 
         if (shopUIRoot != null) shopUIRoot.SetActive(true);
         if (shopPanel != null) shopPanel.SetActive(true);
@@ -327,15 +331,23 @@ public class ShopUIManager : MonoBehaviour
         {
             if (!isSelling)
             {
-                int displayPrice = shopItem.buyPrice;
+                // int price = shopItem.GetFinalBuyPrice();
+                // string discountInfo = shopItem.discountPercentage > 0
+                //     ? $" (-{shopItem.discountPercentage * 100:F0}%)"
+                //     : "";
 
-                // DISCOUNT: Show discounted Buy Now price if event active
-                // Comment this block to always show base price:
+                int price = isSelling
+                            ? shopItem.sellPrice
+                            : Mathf.RoundToInt(shopItem.buyPrice * (1f - currentShopDiscount));
+                string discountInfo = (!isSelling && currentShopDiscount > 0)
+                                      ? $" (-{currentShopDiscount * 100:F0}%)"
+                                      : "";
+
+                // Override dengan CartManager discount kalau aktif
                 if (CartManager.Instance != null && CartManager.Instance.IsDiscountEventActive)
-                    displayPrice = Mathf.Max(0, displayPrice - CartManager.Instance.ActiveDiscountAmount);
-                // END DISCOUNT
+                    price = Mathf.Max(0, price - CartManager.Instance.ActiveDiscountAmount);
 
-                selectedItemPrice.text = $"{displayPrice} coins";
+                selectedItemPrice.text = $"${price}{discountInfo} coins";
             }
             else
             {
