@@ -14,6 +14,8 @@ public class CookingStation : Interactable
     public Recipe[] availableRecipes;
     public CookingUI cookingUI;
     public CookingTemperatureMinigame temperatureMinigame;
+    public CookingPlatingMinigame platingMinigame;
+
 
     [Header("Visual Feedback")]
     public ParticleSystem cookingParticles;
@@ -42,7 +44,17 @@ public class CookingStation : Interactable
                 break;
             case CookingState.Plating:
                 isCooking = false;
-                // TODO: Mulai plating/QTE phase
+                // Mulai Plating QTE Minigame
+                if (platingMinigame != null)
+                {
+                    Debug.Log("Memulai Plating QTE Minigame...");
+                    platingMinigame.StartMinigame(this);
+                }
+                else
+                {
+                    Debug.LogWarning("PlatingMinigame belum di-assign! Langsung berikan hasil.");
+                    OnPlatingComplete(true); // Fallback: anggap berhasil
+                }
                 break;
         }
     }
@@ -174,6 +186,46 @@ public class CookingStation : Interactable
         if (cookingParticles != null) cookingParticles.Stop();
         if (cookingSound != null) cookingSound.Stop();
 
+        if (success)
+        {
+            // Masakan berhasil dimasak → lanjut ke fase Plating QTE!
+            Debug.Log("Temperature Minigame berhasil! Lanjut ke Plating...");
+            ChangeState(CookingState.Plating);
+        }
+        else
+        {
+            // Gagal (gosong) - bahan tetap dikonsumsi sebagai penalti
+            if (pendingRecipe != null && pendingInventory != null)
+            {
+                foreach (var ing in pendingRecipe.ingredients)
+                {
+                    pendingInventory.ConsumeItem(ing.ingredient, ing.amount);
+                }
+            }
+            Debug.LogWarning("Masakan GOSONG! Bahan terbuang!");
+
+            // Reset state
+            isCooking = false;
+            ChangeState(CookingState.Idle);
+            pendingRecipe = null;
+            pendingInventory = null;
+
+            // Unlock player movement
+            PlayerMovement.Instance?.LockMovement(false);
+
+            // Show hotbar kembali
+            if (HotbarVisibilityManager.Instance != null)
+            {
+                HotbarVisibilityManager.Instance.ShowHotbar();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Dipanggil oleh CookingPlatingMinigame saat plating QTE selesai.
+    /// </summary>
+    public void OnPlatingComplete(bool success)
+    {
         if (success && pendingRecipe != null && pendingInventory != null)
         {
             // Konsumsi bahan
@@ -186,16 +238,19 @@ public class CookingStation : Interactable
             bool added = pendingInventory.AddItem(pendingRecipe.resultItem, pendingRecipe.resultAmount);
             if (added)
             {
-                Debug.Log($"✓ Berhasil memasak {pendingRecipe.resultAmount}x {pendingRecipe.resultItem.itemName}!");
+                Debug.Log($"✓ Plating berhasil! {pendingRecipe.resultAmount}x {pendingRecipe.resultItem.itemName}!");
             }
             else
             {
                 Debug.LogWarning("Inventory penuh! Hasil masakan hilang!");
             }
+
+            // Panggil fungsi lanjutan (misal: animasi penyajian, dll.)
+            GiveResultItem();
         }
         else if (!success)
         {
-            // Gagal (gosong) - bahan tetap dikonsumsi sebagai penalti
+            // Plating gagal - bahan tetap dikonsumsi sebagai penalti
             if (pendingRecipe != null && pendingInventory != null)
             {
                 foreach (var ing in pendingRecipe.ingredients)
@@ -203,7 +258,7 @@ public class CookingStation : Interactable
                     pendingInventory.ConsumeItem(ing.ingredient, ing.amount);
                 }
             }
-            Debug.LogWarning("Masakan GOSONG! Bahan terbuang!");
+            Debug.LogWarning("Plating BERANTAKAN! Bahan terbuang!");
         }
 
         // Reset state
@@ -220,6 +275,17 @@ public class CookingStation : Interactable
         {
             HotbarVisibilityManager.Instance.ShowHotbar();
         }
+    }
+
+    /// <summary>
+    /// Fungsi lanjutan yang dipanggil setelah plating berhasil.
+    /// Override atau isi sesuai kebutuhan game-mu.
+    /// </summary>
+    public void GiveResultItem()
+    {
+        Debug.Log("GiveResultItem() dipanggil — Masakan telah disajikan!");
+        // TODO: Tambahkan logika lanjutan di sini
+        // Contoh: trigger animasi penyajian, beri score, dll.
     }
 
     IEnumerator CookingProcess(Recipe recipe, PlayerInventory inventory)
