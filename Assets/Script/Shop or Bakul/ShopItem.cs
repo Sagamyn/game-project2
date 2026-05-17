@@ -9,25 +9,29 @@ public class ShopItem : ScriptableObject
 {
     [Header("Item Reference")]
     public ItemData item; // The actual item (seed, ingredient, etc.)
-    
+
     [Header("Shop Info")]
     public int buyPrice; // How much it costs to buy
     public int sellPrice; // How much player gets when selling (usually 50% of buy price)
-    
+
     [Header("Stock")]
     public bool hasUnlimitedStock = true;
     public int stockAmount = 10; // If not unlimited
-    
+
     [Header("Availability")]
     public bool availableInSpring = true;
     public bool availableInSummer = true;
     public bool availableInFall = true;
     public bool availableInWinter = true;
-    
+
     [Header("Requirements")]
     public bool requiresUnlock = false;
     public string unlockCondition = ""; // e.g., "Reach level 5 farming"
-    
+
+    [Header("Discount")]
+    [Range(0f, 1f)]
+    public float discountPercentage = 0.2f; // e.g., 0.2 for 20% price offs
+
     /// <summary>
     /// Check if item is currently available
     /// </summary>
@@ -39,7 +43,7 @@ public class ShopItem : ScriptableObject
             // For now, just return false if locked
             return false;
         }
-        
+
         switch (currentSeason.ToLower())
         {
             case "spring": return availableInSpring;
@@ -49,7 +53,7 @@ public class ShopItem : ScriptableObject
             default: return true;
         }
     }
-    
+
     /// <summary>
     /// Check if item is in stock
     /// </summary>
@@ -57,7 +61,7 @@ public class ShopItem : ScriptableObject
     {
         return hasUnlimitedStock || stockAmount > 0;
     }
-    
+
 
     public void Purchase(int amount = 1)
     {
@@ -66,5 +70,11 @@ public class ShopItem : ScriptableObject
             stockAmount -= amount;
             if (stockAmount < 0) stockAmount = 0;
         }
+    }
+
+    public int GetFinalBuyPrice()
+    {
+        Debug.Log($"[ShopItem] {item?.itemName} buyPrice={buyPrice}, discount={discountPercentage}, final={Mathf.RoundToInt(buyPrice * (1f - discountPercentage))}");
+        return Mathf.RoundToInt(buyPrice * (1f - discountPercentage));
     }
 }
