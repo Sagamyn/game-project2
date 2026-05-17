@@ -169,7 +169,7 @@ public class CookingStation : Interactable
 
             // Mulai minigame!
             Debug.Log($"Memulai Temperature Minigame untuk {recipe.recipeName}...");
-            temperatureMinigame.StartMinigame(this);
+            temperatureMinigame.StartMinigame(this, recipe);
             return;
         }
 
