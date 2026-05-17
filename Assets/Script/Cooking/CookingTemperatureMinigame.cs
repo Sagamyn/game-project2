@@ -1,11 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Minigame mancing bergaya Stardew Valley untuk fase memasak.
-/// Pemain mengontrol Catch Bar dengan menahan tombol mouse kiri agar Target tetap di dalam
-/// rentang Catch Bar sehingga Progress bertambah dan mencapai 100.
-/// </summary>
 public class CookingTemperatureMinigame : MonoBehaviour
 {
     [Header("UI References")]
@@ -19,9 +14,8 @@ public class CookingTemperatureMinigame : MonoBehaviour
     public MinigameDifficulty defaultDifficulty;
 
     [Header("Optional")]
-    public Sprite targetIcon; // Optional. Jika di-set, akan diaplikasikan ke Image target di StartMinigame.
+    public Sprite targetIcon;
 
-    // Runtime state
     private float currentProgress;
     private float catchBarPosY;
     private float catchBarVelY;
@@ -34,23 +28,13 @@ public class CookingTemperatureMinigame : MonoBehaviour
     private float barHeight;
     private float catchBarHeight;
 
-    /// <summary>
-    /// Memulai minigame menggunakan <see cref="defaultDifficulty"/> sebagai fallback.
-    /// Dipertahankan untuk kompatibilitas dengan caller lama.
-    /// </summary>
     public void StartMinigame(CookingStation station)
     {
         StartMinigame(station, null);
     }
 
-    /// <summary>
-    /// Memulai minigame untuk sebuah resep. Jika <paramref name="recipe"/> punya
-    /// <see cref="MinigameDifficulty"/> yang valid, parameter tersebut yang dipakai;
-    /// jika tidak, fallback ke <see cref="defaultDifficulty"/>.
-    /// </summary>
     public void StartMinigame(CookingStation station, Recipe recipe)
     {
-        // Validasi referensi UI
         if (verticalBar == null)
         {
             Debug.LogError("[CookingTemperatureMinigame] 'verticalBar' belum di-assign.");
@@ -81,7 +65,7 @@ public class CookingTemperatureMinigame : MonoBehaviour
             || activeDifficulty.targetSpeed <= 0f
             || activeDifficulty.pushForce <= 0f)
         {
-            Debug.LogError("[CookingTemperatureMinigame] MinigameDifficulty tidak valid (defaultDifficulty kosong atau Recipe.minigameDifficulty kosong dan tidak ada fallback).");
+            Debug.LogError("[CookingTemperatureMinigame] MinigameDifficulty tidak valid.");
             EndMinigame(false);
             return;
         }
@@ -89,12 +73,11 @@ public class CookingTemperatureMinigame : MonoBehaviour
         isPlaying = true;
         currentProgress = 50f;
 
-        // Pastikan layout sudah dihitung sebelum membaca height
         Canvas.ForceUpdateCanvases();
         barHeight = verticalBar.rect.height;
         if (barHeight <= 0f)
         {
-            Debug.LogWarning("[CookingTemperatureMinigame] VerticalBar height is 0 — abort minigame.");
+            Debug.LogWarning("[CookingTemperatureMinigame] VerticalBar height is 0.");
             EndMinigame(false);
             return;
         }
@@ -109,7 +92,6 @@ public class CookingTemperatureMinigame : MonoBehaviour
 
         ApplyCatchBarHeight();
 
-        // Optional: terapkan sprite Target jika disediakan
         if (targetIcon != null)
         {
             var img = target.GetComponent<Image>();
@@ -258,17 +240,8 @@ public class CookingTemperatureMinigame : MonoBehaviour
     }
 }
 
-/// <summary>
-/// Pure helper functions untuk logika minigame. Tidak menyentuh Time, Input, RectTransform,
-/// atau UnityEngine.Random. Murni input → output, sehingga dapat diuji secara terisolasi.
-/// </summary>
 internal static class MinigamePure
 {
-    /// <summary>
-    /// Semi-implicit Euler: vel' = vel + accel*dt; pos' = pos + vel'*dt.
-    /// Setelah integrasi, pos' di-clamp ke [lo, hi]. Jika pos' menyentuh batas (akibat
-    /// clamp), vel' di-set 0.
-    /// </summary>
     public static (float pos, float vel) IntegrateCatchBar(
         float pos, float vel, float accel, float dt, float lo, float hi)
     {
@@ -289,10 +262,6 @@ internal static class MinigamePure
         return (newPos, newVel);
     }
 
-    /// <summary>
-    /// Mengembalikan true jika titik tengah Target (targetY) berada di dalam rentang
-    /// vertikal Catch Bar [catchBarPosY - catchBarHeight/2, catchBarPosY + catchBarHeight/2].
-    /// </summary>
     public static bool IsTargetInsideCatchBar(float targetY, float catchBarPosY, float catchBarHeight)
     {
         float half = catchBarHeight / 2f;
@@ -300,10 +269,6 @@ internal static class MinigamePure
             && targetY <= catchBarPosY + half;
     }
 
-    /// <summary>
-    /// Menambah progress dengan gainRate*dt jika inside, atau mengurangi dengan lossRate*dt
-    /// jika tidak. Hasil di-clamp ke [0, 100].
-    /// </summary>
     public static float StepProgress(
         float currentProgress, bool inside, float gainRate, float lossRate, float dt)
     {
@@ -316,10 +281,6 @@ internal static class MinigamePure
         return next;
     }
 
-    /// <summary>
-    /// Memindahkan targetPosY menuju targetGoalPosY sejauh min(|goal - pos|, targetSpeed*dt).
-    /// Jika sudah cukup dekat (langkah cukup untuk mencapai goal), kembalikan goal.
-    /// </summary>
     public static float StepTargetTowardsGoal(
         float targetPosY, float targetGoalPosY, float targetSpeed, float dt)
     {
