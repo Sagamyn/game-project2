@@ -9,6 +9,7 @@ public class CookingTemperatureMinigame : MonoBehaviour
     public RectTransform target;
     public Slider progressBar;
     public UIAnimator uiAnimator;
+    public CookingMinigameUI visualUI;
 
     [Header("Difficulty (fallback if Recipe has none)")]
     public MinigameDifficulty defaultDifficulty;
@@ -99,6 +100,8 @@ public class CookingTemperatureMinigame : MonoBehaviour
         }
 
         SyncUI();
+
+        if (visualUI != null) visualUI.OnMinigameStart();
 
         if (uiAnimator != null) uiAnimator.ShowInstant();
         else gameObject.SetActive(true);
@@ -228,6 +231,8 @@ public class CookingTemperatureMinigame : MonoBehaviour
     private void EndMinigame(bool success)
     {
         isPlaying = false;
+
+        if (visualUI != null) visualUI.OnMinigameEnd(success);
 
         if (uiAnimator != null) uiAnimator.HideInstant();
         else gameObject.SetActive(false);
