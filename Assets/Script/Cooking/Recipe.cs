@@ -30,6 +30,9 @@ public class Recipe : ScriptableObject
     [TextArea(3, 5)]
     public string description;
 
+    [Header("Cooking Minigame Difficulty")]
+    public MinigameDifficulty minigameDifficulty;
+
     // Check if player has all ingredients
     public bool CanCraft(PlayerInventory inventory)
     {
