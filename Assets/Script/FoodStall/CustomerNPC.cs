@@ -14,14 +14,17 @@ public class CustomerNPC : MonoBehaviour
     public SpriteRenderer spriteRenderer;
     
     [Header("Thought Bubble - World Space")]
-    public GameObject thoughtBubbleObject; // Parent GameObject for the bubble
-    public SpriteRenderer thoughtBubbleBackground; // Bubble background sprite
-    public SpriteRenderer orderedFoodIcon; // The food icon sprite
-    public Vector3 bubbleOffset = new Vector3(0, 1.5f, 0); // Offset above customer's head
+    public GameObject thoughtBubbleObject;
+    public SpriteRenderer thoughtBubbleBackground;
+    public SpriteRenderer orderedFoodIcon;
+    public Vector3 bubbleOffset = new Vector3(0, 1.5f, 0);
 
     [Header("Movement")]
     public Transform seatPosition;
     public float moveSpeed = 2f;
+
+    [Header("Attack Settings")]
+    public int attackDamage = 15;
 
     private Restaurant restaurant;
     private bool isSeated = false;
@@ -32,7 +35,6 @@ public class CustomerNPC : MonoBehaviour
         restaurant = restaurantRef;
         seatPosition = seat;
 
-        // Create order
         currentOrder = new CustomerOrder
         {
             orderId = Random.Range(1000, 9999),
@@ -43,23 +45,19 @@ public class CustomerNPC : MonoBehaviour
             status = CustomerOrder.OrderStatus.Waiting
         };
 
-        // Random name if not set
         if (string.IsNullOrEmpty(customerName))
             customerName = $"Customer {currentOrder.orderId}";
 
         Debug.Log($"{customerName} ordered {currentOrder.orderedFood.itemName} for ${currentOrder.price}");
 
-        // Hide bubble initially
         if (thoughtBubbleObject != null)
             thoughtBubbleObject.SetActive(false);
 
-        // Move to seat
         StartCoroutine(MoveToSeat());
     }
 
     IEnumerator MoveToSeat()
     {
-        // Move to seat position
         while (Vector3.Distance(transform.position, seatPosition.position) > 0.1f)
         {
             transform.position = Vector3.MoveTowards(
@@ -72,19 +70,15 @@ public class CustomerNPC : MonoBehaviour
 
         isSeated = true;
         ShowOrder();
-
-        // Start patience timer
         StartCoroutine(PatienceTimer());
     }
 
     void ShowOrder()
     {
-        // Show thought bubble
         if (thoughtBubbleObject != null)
         {
             thoughtBubbleObject.SetActive(true);
             
-            // Set food icon
             if (orderedFoodIcon != null && currentOrder.orderedFood != null)
             {
                 orderedFoodIcon.sprite = currentOrder.orderedFood.icon;
@@ -101,7 +95,6 @@ public class CustomerNPC : MonoBehaviour
 
     void Update()
     {
-        // Keep thought bubble above customer's head
         if (thoughtBubbleObject != null && thoughtBubbleObject.activeSelf)
         {
             thoughtBubbleObject.transform.position = transform.position + bubbleOffset;
@@ -114,13 +107,19 @@ public class CustomerNPC : MonoBehaviour
         {
             if (currentOrder.IsExpired())
             {
-                // Customer leaves angry
                 currentOrder.status = CustomerOrder.OrderStatus.Failed;
-                Debug.Log($"{customerName} left angry!");
-                
+                Debug.Log($"{customerName} is ANGRY and attacks!");
+
+                // Turn red to show anger visually
+                if (spriteRenderer != null)
+                    spriteRenderer.color = Color.red;
+
+                // Hit the player directly — no range check needed
+                PlayerHealth.Instance?.TakeDamage(attackDamage);
+
                 if (restaurant != null)
                     restaurant.OnCustomerLeft(this, false);
-                    
+
                 Leave();
                 yield break;
             }
@@ -138,61 +137,48 @@ public class CustomerNPC : MonoBehaviour
         }
 
         currentOrder.status = CustomerOrder.OrderStatus.Completed;
-
         Debug.Log($"{customerName} received {food.itemName}!");
 
-        // Hide thought bubble
         if (thoughtBubbleObject != null)
             thoughtBubbleObject.SetActive(false);
 
-        // Pay and leave
         StartCoroutine(PayAndLeave());
     }
 
     IEnumerator PayAndLeave()
     {
-        yield return new WaitForSeconds(2f); // Eating time
+        yield return new WaitForSeconds(2f);
 
-        // Notify restaurant
         if (restaurant != null)
             restaurant.OnCustomerLeft(this, true);
 
         Leave();
     }
 
-    // Called when restaurant closes mid-session
     public void LeaveImmediately()
     {
-        if (isLeaving) return; // Prevent multiple calls
+        if (isLeaving) return;
         
         isLeaving = true;
         
         Debug.Log($"🚪 {customerName} is leaving due to restaurant closure");
         
-        // Stop all coroutines (including patience timer)
         StopAllCoroutines();
         
-        // Update order status
         if (currentOrder != null && currentOrder.status == CustomerOrder.OrderStatus.Waiting)
-        {
             currentOrder.status = CustomerOrder.OrderStatus.Failed;
-        }
         
-        // Hide thought bubble
         if (thoughtBubbleObject != null)
             thoughtBubbleObject.SetActive(false);
         
-        // Start leaving immediately
         StartCoroutine(MoveOut());
     }
 
     void Leave()
     {
-        if (isLeaving) return; // Already leaving
+        if (isLeaving) return;
         
         isLeaving = true;
-        
-        // Move out of restaurant
         StartCoroutine(MoveOut());
     }
 
@@ -221,7 +207,6 @@ public class CustomerNPC : MonoBehaviour
             Gizmos.DrawLine(transform.position, seatPosition.position);
         }
 
-        // Draw bubble position
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position + bubbleOffset, 0.3f);
     }

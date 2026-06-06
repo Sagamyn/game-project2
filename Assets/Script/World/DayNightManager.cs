@@ -2,10 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System;
 
-/// <summary>
-/// Manages day/night cycle
-/// Resources regenerate when new day starts
-/// </summary>
+
 public class DayNightManager : MonoBehaviour
 {
     [Header("Day Settings")]
@@ -297,25 +294,5 @@ public class DayNightManager : MonoBehaviour
     public string GetDayString()
     {
         return $"Day {currentDay}";
-    }
-
-    void OnGUI()
-    {
-        // Debug display in top-right
-        if (!Application.isPlaying) return;
-        
-        GUIStyle style = new GUIStyle();
-        style.fontSize = 24;
-        style.normal.textColor = Color.white;
-        style.alignment = TextAnchor.UpperRight;
-        
-        string timeText = $"{GetDayString()}\n{GetTimeString()}\n{(IsDaytime() ? "☀️ Day" : "🌙 Night")}";
-        
-        if (waitingForSleep)
-        {
-            timeText += "\n go sleep bro";
-        }
-        
-        GUI.Label(new Rect(Screen.width - 200, 10, 190, 120), timeText, style);
     }
 }
