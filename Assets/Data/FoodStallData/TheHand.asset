@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f44f8e71e72ffa4faf1d116bf2f1029, type: 3}
+  m_Name: TheHand
+  m_EditorClassIdentifier: 
+  buffName: The Hand
+  buffType: 2
+  rarity: 0
+  cardSprite: {fileID: 389092018, guid: c35c5179bb91506449616b0ed23fc3a0, type: 3}
+  cardSpriteOutline: {fileID: 678166456, guid: dd5194cedf0e3e247aa651bb32ce8194, type: 3}
+  description: You cant get hurt.
+  price: 100
+  value: 1
+  merchantReaction: You are cheating arent you?

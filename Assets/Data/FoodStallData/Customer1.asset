@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fb1c89823102dc042a83ebf989ea9413, type: 3}
+  m_Name: Customer1
+  m_EditorClassIdentifier: 
+  customerName: Customer1
+  idleSprite: {fileID: 21300000, guid: a4df790ff6723204ebeae89b3db8924d, type: 3}
+  happySprite: {fileID: 0}
+  angrySprite: {fileID: 0}
+  possibleOrders:
+  - {fileID: 11400000, guid: 8f2f475ee9b750145a504ad9f115d6e5, type: 2}
+  patience: 10
+  payAmount: 50
