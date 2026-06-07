@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e162153636daae045a47a6edf1d31982, type: 3}
+  m_Name: KetchupData
+  m_EditorClassIdentifier: 
+  ingredientName: ketchup
+  ingredientSprite:
+  - {fileID: -1749153491, guid: 75cbcbaba3ab84947b03b0dd4bd13c46, type: 3}
+  - {fileID: 1166513606, guid: 75cbcbaba3ab84947b03b0dd4bd13c46, type: 3}
+  - {fileID: 2095243153, guid: 75cbcbaba3ab84947b03b0dd4bd13c46, type: 3}
+  - {fileID: 2095243153, guid: 75cbcbaba3ab84947b03b0dd4bd13c46, type: 3}
+  - {fileID: 593025996, guid: 75cbcbaba3ab84947b03b0dd4bd13c46, type: 3}
+  - {fileID: 282497728, guid: 75cbcbaba3ab84947b03b0dd4bd13c46, type: 3}
+  isTortilla: 0
+  minSpawn: 1
+  maxSpawn: 1

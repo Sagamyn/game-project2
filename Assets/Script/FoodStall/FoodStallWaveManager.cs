@@ -54,6 +54,8 @@ public class FoodStallWaveManager : MonoBehaviour
 
     [Header("All Waves Complete")]
     public GameObject allWavesCompletePanel;
+    [Header("Kebab")]
+    public KebabFoodItem kebabResult;
 
     // =========================================
     // RUNTIME
@@ -71,9 +73,9 @@ public class FoodStallWaveManager : MonoBehaviour
     private bool isRunning = false;
     private bool waitingForContinue = false;
 
-    public static bool CanSleep     = false;
+    public static bool CanSleep = false;
     // Locked after wave session ends; unlocked when player sleeps
-    public static bool CanStartWave  = true;
+    public static bool CanStartWave = true;
 
     public FoodStallCustomer activeCustomer = null;
 
@@ -116,7 +118,7 @@ public class FoodStallWaveManager : MonoBehaviour
 
     public void StartWaves()
     {
-        if (isRunning)     return;
+        if (isRunning) return;
         if (!CanStartWave) return;  // locked until player sleeps
 
         currentWaveIndex = 0;
@@ -128,9 +130,9 @@ public class FoodStallWaveManager : MonoBehaviour
         happyCustomers = 0;
         angryCustomers = 0;
 
-        isRunning    = true;
+        isRunning = true;
         CanStartWave = false;  // locked for this session
-        CanSleep     = false;
+        CanSleep = false;
 
         // Activate buffs the player bought last session
         BuffManager.Instance?.OnWaveStart();
@@ -155,7 +157,7 @@ public class FoodStallWaveManager : MonoBehaviour
     public void OnPlayerWokeUp()
     {
         CanStartWave = true;
-        CanSleep     = false;
+        CanSleep = false;
 
         if (openStallButton != null)
             openStallButton.gameObject.SetActive(true);
@@ -184,8 +186,8 @@ public class FoodStallWaveManager : MonoBehaviour
 
     IEnumerator RunWave(FoodStallWaveData wave)
     {
+        activeCustomer = null;
         currentCustomerIndex = 0;
-
         UpdateWaveUI();
 
         Debug.Log($"Starting {wave.waveName}");
@@ -200,6 +202,7 @@ public class FoodStallWaveManager : MonoBehaviour
             // Wait previous customer leave
             while (activeCustomer != null)
                 yield return null;
+            Debug.Log($"Customer muncul nih");
 
             float waitTime = Random.Range(
                 wave.minTimeBetweenCustomers,
@@ -243,6 +246,8 @@ public class FoodStallWaveManager : MonoBehaviour
             return;
         }
 
+        Debug.Log($"check prefab & check spawnpoint passed");
+
         GameObject obj = Instantiate(
             customerPrefab,
             customerSpawnPoint.position,
@@ -264,7 +269,6 @@ public class FoodStallWaveManager : MonoBehaviour
         customer.Spawn(data);
 
         activeCustomer = customer;
-
         Debug.Log($"Spawned customer: {data.customerName}");
     }
 
@@ -306,40 +310,33 @@ public class FoodStallWaveManager : MonoBehaviour
 
     public void ServeCurrentCustomer()
     {
-        if (activeCustomer == null)
-        {
-            Debug.Log("No customer to serve!");
-            return;
-        }
+        if (activeCustomer == null) return;
 
-        ItemData ordered = activeCustomer.OrderedItem;
-
-        if (ordered == null)
-        {
-            Debug.LogError("Customer has no ordered item!");
-            return;
-        }
-
-        int amount = playerInventory.GetAmount(ordered);
-
-        Debug.Log($"Customer wants: {ordered.itemName}");
-        Debug.Log($"Player has: {amount}");
-
+        // Cek inventory ada kebab tidak
+        int amount = playerInventory.GetAmount(kebabResult);
         if (amount <= 0)
         {
-            Debug.LogWarning(
-                $"You don't have {ordered.itemName}!"
-            );
+            Debug.Log("Belum ada kebab di inventory!");
             return;
         }
 
-        // Remove food from inventory
-        playerInventory.ConsumeItem(ordered, 1);
+        // Ambil LastResult dari KebabAssembly
+        KebabResult result = KebabAssembly.LastResult;
+        if (result == null)
+        {
+            Debug.LogWarning("LastResult null!");
+            return;
+        }
 
-        // Serve customer
-        Debug.Log($"Served {ordered.itemName}");
+        // Consume dari inventory
+        playerInventory.ConsumeItem(kebabResult, 1);
 
-        activeCustomer.TryServe(ordered);
+        // Set harga override
+        activeCustomer.ServePriceOverride =
+            result.CalculatePrice(activeCustomer.AssignedRecipe);
+
+        // Serve ke customer
+        activeCustomer.TryServeKebab(result, activeCustomer.AssignedRecipe);
     }
 
     // =========================================
@@ -453,14 +450,14 @@ public class FoodStallWaveManager : MonoBehaviour
             yield return null;
         }
 
-            yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.3f);
 
-            if (merchant != null)
-            {
-                yield return StartCoroutine(
-                    merchant.AppearFromDark()
-                );
-            }
+        if (merchant != null)
+        {
+            yield return StartCoroutine(
+                merchant.AppearFromDark()
+            );
+        }
     }
 
     // =========================================
@@ -470,7 +467,7 @@ public class FoodStallWaveManager : MonoBehaviour
     public void OnContinuePressed()
     {
         waitingForContinue = false;
-        
+
         if (merchant != null)
         {
             merchant.Hide();

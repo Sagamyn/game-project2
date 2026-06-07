@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0193f37879cd81478523511ffcacf6c, type: 3}
+  m_Name: Recipe_Kebab_4
+  m_EditorClassIdentifier: 
+  recipeName: Recipe 4
+  recipeIcon: {fileID: 0}
+  requiredIngredients:
+  - {fileID: 11400000, guid: cc08c20b10f9f2f4fbb9b3dc7965f44a, type: 2}
+  - {fileID: 11400000, guid: 6312ba365e6dcac4cbb233fbbb5c95d8, type: 2}
+  - {fileID: 11400000, guid: 478051ff46b6faf4eb04731a164b4940, type: 2}
+  - {fileID: 11400000, guid: 9d67236d0ac377b48add6c22146a257d, type: 2}
+  basePrice: 20
+  bonusPrice: 5
+  patienceOverride: 0

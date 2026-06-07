@@ -8,15 +8,18 @@ public class FoodStallCustomer : MonoBehaviour
     [Header("UI References")]
     public Image customerImage;
     public GameObject speechBubble;
-    public Image speechBubbleFoodIcon;
+    public KebabIngredientData tortillaData;
+    // public Image speechBubbleFoodIcon;
+    public Transform orderIconContainer;
+    public GameObject orderIconPrefab;
     public Image patienceBar;
     public GameObject happyEffect;
     public GameObject angryEffect;
 
     [Header("Patience Bar Colors")]
     public Color patienceHighColor = Color.green;
-    public Color patienceMedColor  = Color.yellow;
-    public Color patienceLowColor  = Color.red;
+    public Color patienceMedColor = Color.yellow;
+    public Color patienceLowColor = Color.red;
 
     [Header("Attack")]
     public int attackDamage = 15;
@@ -26,14 +29,19 @@ public class FoodStallCustomer : MonoBehaviour
     // Runtime
     private CustomerData data;
     private ItemData orderedItem;
+    private KebabRecipeData assignedRecipe; // null kalau customer pakai ItemData biasa
     private float patienceTimer;
     private bool isWaiting = false;
     private bool isLeaving = false;
+
+    // Harga override dari KebabResult.CalculatePrice()
+    [HideInInspector] public int ServePriceOverride = -1;
 
     // Events
     public System.Action<FoodStallCustomer, bool, int> OnLeft;
 
     public ItemData OrderedItem => orderedItem;
+    public KebabRecipeData AssignedRecipe => assignedRecipe;
 
     // =========================================
     // SPAWN
@@ -43,58 +51,114 @@ public class FoodStallCustomer : MonoBehaviour
     {
         data = customerData;
 
-        if (data.possibleOrders != null && data.possibleOrders.Length > 0)
+        // Coba ambil KebabRecipeData dulu
+        KebabRecipeData recipe = data.GetRandomRecipe();
+
+        if (recipe != null)
+        {
+            // Mode kebab — pakai KebabRecipeData
+            assignedRecipe = recipe;
+            orderedItem = null;
+
+            // Tampilkan icon dari recipe
+            // if (speechBubbleFoodIcon != null && recipe.recipeIcon != null)
+            //     speechBubbleFoodIcon.sprite = recipe.recipeIcon;
+            if (recipe != null)
+            {
+                ShowOrderIcons(recipe);
+            }
+        }
+        else if (data.possibleOrders != null && data.possibleOrders.Length > 0)
+        {
+            // Fallback — pakai ItemData biasa (sistem lama tetap jalan)
+            assignedRecipe = null;
             orderedItem = data.possibleOrders[
                 Random.Range(0, data.possibleOrders.Length)];
+
+            // if (speechBubbleFoodIcon != null && orderedItem != null)
+            //     speechBubbleFoodIcon.sprite = orderedItem.icon;
+            Debug.Log($"Fallback order: {orderedItem?.itemName}");
+        }
         else
         {
             Debug.LogError($"Customer {data.customerName} has no possible orders!");
             return;
         }
 
-        if (customerImage != null)
-            customerImage.sprite = data.idleSprite;
-
-        if (speechBubble != null)
-            speechBubble.SetActive(true);
-
-        if (speechBubbleFoodIcon != null && orderedItem != null)
-            speechBubbleFoodIcon.sprite = orderedItem.icon;
-
+        if (customerImage != null) customerImage.sprite = data.idleSprite;
+        if (speechBubble != null) speechBubble.SetActive(true);
         if (happyEffect != null) happyEffect.SetActive(false);
         if (angryEffect != null) angryEffect.SetActive(false);
 
-        patienceTimer = data.patience;
-        isWaiting     = true;
-        isLeaving     = false;
+        float patience = (assignedRecipe?.patienceOverride > 0)
+                           ? assignedRecipe.patienceOverride
+                           : data.patience;
+        patienceTimer = patience;
+        isWaiting = true;
+        isLeaving = false;
 
         StartCoroutine(SlideIn());
 
-        Debug.Log($"✓ {data.customerName} appeared, wants: {orderedItem.itemName}");
+        Debug.Log($"✓ {data.customerName} appeared, wants: " +
+                  $"{(assignedRecipe != null ? assignedRecipe.recipeName : orderedItem?.itemName)}");
     }
 
     // =========================================
     // UPDATE — patience tick
     // =========================================
 
+    void ShowOrderIcons(KebabRecipeData recipe)
+    {
+        if (orderIconContainer == null || orderIconPrefab == null) return;
+        // Clear icon yang ada sebelumnya
+        foreach (Transform child in orderIconContainer)
+        {
+            Destroy(child.gameObject);
+        }
+        // Munculkan icon tortilla di message bubble dulu (kalau ada), baru toppingnya
+        if (tortillaData != null && tortillaData.ingredientSprite.Length > 0)
+        {
+            GameObject tortillaIcon = Instantiate(orderIconPrefab, orderIconContainer);
+            Image img = tortillaIcon.GetComponent<Image>();
+            if (img != null)
+            {
+                img.sprite = tortillaData.ingredientSprite[0];
+                img.rectTransform.sizeDelta = new Vector2(50f, 50f); // fixed size semua
+                // img.SetNativeSize();
+            }
+        }
+
+        // Munculkan icon sisanya di samping bubble
+        foreach (var ingredient in recipe.requiredIngredients)
+        {
+            if (ingredient.ingredientSprite == null ||
+            ingredient.ingredientSprite.Length == 0) continue;
+
+            GameObject iconObj = Instantiate(orderIconPrefab, orderIconContainer);
+            Image img = iconObj.GetComponent<Image>();
+            if (img != null)
+            {
+                img.sprite = ingredient.ingredientSprite[0];
+                img.rectTransform.sizeDelta = new Vector2(50f, 50f); // fixed size semua
+                // img.SetNativeSize();
+            }
+        }
+    }
+
     void Update()
     {
         if (!isWaiting || isLeaving) return;
 
-        // Death 13 buff — no patience countdown at all
-        if (BuffManager.Instance != null &&
-            BuffManager.Instance.noPatience)
+        if (BuffManager.Instance != null && BuffManager.Instance.noPatience)
         {
-            // Keep bar full and green visually
             if (patienceBar != null)
             {
                 patienceBar.fillAmount = 1f;
-                patienceBar.color      = patienceHighColor;
+                patienceBar.color = patienceHighColor;
             }
             return;
         }
 
-        // MorePatience buff — divide delta by multiplier so timer drains slower
         float multiplier = BuffManager.Instance?.patienceMultiplier ?? 1f;
         patienceTimer -= Time.deltaTime / multiplier;
 
@@ -108,19 +172,19 @@ public class FoodStallCustomer : MonoBehaviour
     {
         if (patienceBar == null) return;
 
-        float percent          = Mathf.Clamp01(patienceTimer / data.patience);
-        patienceBar.fillAmount = percent;
+        float total = (assignedRecipe?.patienceOverride > 0)
+                        ? assignedRecipe.patienceOverride
+                        : data.patience;
+        float percent = Mathf.Clamp01(patienceTimer / total);
 
-        if (percent > 0.6f)
-            patienceBar.color = patienceHighColor;
-        else if (percent > 0.3f)
-            patienceBar.color = patienceMedColor;
-        else
-            patienceBar.color = patienceLowColor;
+        patienceBar.fillAmount = percent;
+        patienceBar.color = percent > 0.6f ? patienceHighColor
+                          : percent > 0.3f ? patienceMedColor
+                                           : patienceLowColor;
     }
 
     // =========================================
-    // SERVE
+    // SERVE — ItemData (sistem lama, tetap jalan)
     // =========================================
 
     public void TryServe(ItemData food)
@@ -128,23 +192,29 @@ public class FoodStallCustomer : MonoBehaviour
         if (!isWaiting || isLeaving) return;
 
         if (food == orderedItem)
-        {
             StartCoroutine(LeaveHappy());
-        }
+        else if (BuffManager.Instance != null && BuffManager.Instance.wrongFoodNoLeave)
+            StartCoroutine(LeaveHappy());
         else
-        {
-            // Hey Ya! buff — wrong food still makes customer happy
-            if (BuffManager.Instance != null &&
-                BuffManager.Instance.wrongFoodNoLeave)
-            {
-                Debug.Log("Hey Ya! buff — wrong food accepted!");
-                StartCoroutine(LeaveHappy());
-            }
-            else
-            {
-                StartCoroutine(WrongFoodReaction());
-            }
-        }
+            StartCoroutine(WrongFoodReaction());
+    }
+
+    // =========================================
+    // SERVE — KebabResult (sistem baru)
+    // =========================================
+
+    public void TryServeKebab(KebabResult result, KebabRecipeData recipe)
+    {
+        Debug.Log($"TryServeKebab dipanggil! isWaiting:{isWaiting} isLeaving:{isLeaving}");
+        Debug.Log(System.Environment.StackTrace); // ini kasih tau siapa yang manggil
+        if (!isWaiting || isLeaving) return;
+
+        if (result.Matches(recipe))
+            StartCoroutine(LeaveHappy());
+        else if (BuffManager.Instance != null && BuffManager.Instance.wrongFoodNoLeave)
+            StartCoroutine(LeaveHappy());
+        else
+            StartCoroutine(WrongFoodReaction());
     }
 
     // =========================================
@@ -157,7 +227,7 @@ public class FoodStallCustomer : MonoBehaviour
         isLeaving = true;
 
         if (speechBubble != null) speechBubble.SetActive(false);
-        if (patienceBar  != null) patienceBar.gameObject.SetActive(false);
+        if (patienceBar != null) patienceBar.gameObject.SetActive(false);
 
         if (customerImage != null && data.happySprite != null)
             customerImage.sprite = data.happySprite;
@@ -165,16 +235,16 @@ public class FoodStallCustomer : MonoBehaviour
         if (happyEffect != null) happyEffect.SetActive(true);
 
         yield return new WaitForSeconds(1.2f);
-
         yield return StartCoroutine(SlideOut());
 
-        // Apply money multiplier + bonus per happy customer
         float multiplier = BuffManager.Instance?.moneyMultiplier ?? 1f;
-        int   bonus      = BuffManager.Instance?.bonusPerHappyCustomer ?? 0;
-        int   finalPay   = Mathf.RoundToInt(data.payAmount * multiplier) + bonus;
+        int bonus = BuffManager.Instance?.bonusPerHappyCustomer ?? 0;
+
+        // Pakai ServePriceOverride kalau ada (dari KebabResult.CalculatePrice)
+        int baseAmount = ServePriceOverride >= 0 ? ServePriceOverride : data.payAmount;
+        int finalPay = Mathf.RoundToInt(baseAmount * multiplier) + bonus;
 
         OnLeft?.Invoke(this, true, finalPay);
-
         Destroy(gameObject);
     }
 
@@ -182,70 +252,43 @@ public class FoodStallCustomer : MonoBehaviour
     // LEAVE ANGRY
     // =========================================
 
-        IEnumerator LeaveAngry()
+    IEnumerator LeaveAngry()
     {
         isWaiting = false;
         isLeaving = true;
 
-        if (speechBubble != null)
-            speechBubble.SetActive(false);
-
-        if (patienceBar != null)
-            patienceBar.gameObject.SetActive(false);
+        if (speechBubble != null) speechBubble.SetActive(false);
+        if (patienceBar != null) patienceBar.gameObject.SetActive(false);
 
         if (customerImage != null && data.angrySprite != null)
             customerImage.sprite = data.angrySprite;
 
-        if (angryEffect != null)
-            angryEffect.SetActive(true);
+        if (angryEffect != null) angryEffect.SetActive(true);
 
-        bool isInvincible =
-            BuffManager.Instance != null &&
-            BuffManager.Instance.isInvincible;
+        bool isInvincible = BuffManager.Instance?.isInvincible ?? false;
 
         if (!isInvincible)
         {
-            // DAMAGE PLAYER
             PlayerHealth.Instance?.TakeDamage(attackDamage);
 
-            // PLAY SMACK SOUND
             if (smackSound != null)
-            {
                 AudioManager.Instance.PlaySFX(smackSound);
-            }
 
-            // SCREEN FLASH
-                if (impactFrame != null)
+            if (impactFrame != null)
             {
                 impactFrame.gameObject.SetActive(true);
-
                 Color c = impactFrame.color;
                 c.a = 1f;
                 impactFrame.color = c;
             }
-
-            Debug.Log(
-                $"{data.customerName} attacked player for {attackDamage} damage!"
-            );
         }
 
-        bool stillPays =
-            BuffManager.Instance != null &&
-            BuffManager.Instance.angryCustomerStillPays;
+        bool stillPays = BuffManager.Instance?.angryCustomerStillPays ?? false;
 
         yield return new WaitForSeconds(1f);
-
         yield return StartCoroutine(SlideOut());
 
-        if (stillPays)
-        {
-            OnLeft?.Invoke(this, true, data.payAmount);
-        }
-        else
-        {
-            OnLeft?.Invoke(this, false, 0);
-        }
-
+        OnLeft?.Invoke(this, stillPays, stillPays ? data.payAmount : 0);
         Destroy(gameObject);
     }
 
@@ -273,38 +316,31 @@ public class FoodStallCustomer : MonoBehaviour
     IEnumerator SlideIn()
     {
         Vector3 startPos = transform.localPosition + Vector3.down * 300f;
-        Vector3 endPos   = transform.localPosition;
+        Vector3 endPos = transform.localPosition;
         transform.localPosition = startPos;
 
-        float duration = 0.4f;
-        float elapsed  = 0f;
-
+        float duration = 0.4f, elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t  = elapsed / duration;
             transform.localPosition = Vector3.Lerp(
-                startPos, endPos, Mathf.SmoothStep(0f, 1f, t));
+                startPos, endPos, Mathf.SmoothStep(0f, 1f, elapsed / duration));
             yield return null;
         }
-
         transform.localPosition = endPos;
     }
 
     IEnumerator SlideOut()
     {
         Vector3 startPos = transform.localPosition;
-        Vector3 endPos   = transform.localPosition + Vector3.down * 300f;
+        Vector3 endPos = transform.localPosition + Vector3.down * 300f;
 
-        float duration = 0.3f;
-        float elapsed  = 0f;
-
+        float duration = 0.3f, elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            float t  = elapsed / duration;
             transform.localPosition = Vector3.Lerp(
-                startPos, endPos, Mathf.SmoothStep(0f, 1f, t));
+                startPos, endPos, Mathf.SmoothStep(0f, 1f, elapsed / duration));
             yield return null;
         }
     }
