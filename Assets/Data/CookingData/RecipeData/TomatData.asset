@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e162153636daae045a47a6edf1d31982, type: 3}
+  m_Name: TomatData
+  m_EditorClassIdentifier: 
+  ingredientName: tomat
+  ingredientSprite:
+  - {fileID: 892701144, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  - {fileID: -2076557936, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  - {fileID: 1516259241, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  - {fileID: -1476088401, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  - {fileID: 611557591, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  - {fileID: 460559177, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  - {fileID: 1168669726, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  - {fileID: 770144524, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  - {fileID: 1144954544, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  - {fileID: 610145814, guid: 3fb847bb6e13b184c8d1bd05f04ff283, type: 3}
+  isTortilla: 0
+  minSpawn: 1
+  maxSpawn: 3

@@ -1077,8 +1077,9 @@ GameObject:
   - component: {fileID: 103009830}
   - component: {fileID: 103009829}
   - component: {fileID: 103009831}
+  - component: {fileID: 103009832}
   m_Layer: 5
-  m_Name: Nomat
+  m_Name: Mustard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1185,6 +1186,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &103009832
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 103009827}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79396c71a41d0824494ab9bf32f27d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ingredient: {fileID: 11400000, guid: fe68d1542c1e84a46b7161d73223772d, type: 2}
+  kebabAssembly: {fileID: 1935050934}
 --- !u!1 &115576483
 GameObject:
   m_ObjectHideFlags: 0
@@ -2605,6 +2620,7 @@ GameObject:
   - component: {fileID: 172539139}
   - component: {fileID: 172539138}
   - component: {fileID: 172539140}
+  - component: {fileID: 172539141}
   m_Layer: 5
   m_Name: Daging
   m_TagString: Untagged
@@ -2713,6 +2729,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &172539141
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 172539136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79396c71a41d0824494ab9bf32f27d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ingredient: {fileID: 11400000, guid: cc08c20b10f9f2f4fbb9b3dc7965f44a, type: 2}
+  kebabAssembly: {fileID: 1935050934}
 --- !u!1 &174625770
 GameObject:
   m_ObjectHideFlags: 0
@@ -2725,6 +2755,7 @@ GameObject:
   - component: {fileID: 174625773}
   - component: {fileID: 174625772}
   - component: {fileID: 174625774}
+  - component: {fileID: 174625775}
   m_Layer: 5
   m_Name: Tortilas
   m_TagString: Untagged
@@ -2833,6 +2864,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &174625775
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 174625770}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79396c71a41d0824494ab9bf32f27d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ingredient: {fileID: 11400000, guid: 131ec6671cc36c042891095297afbae6, type: 2}
+  kebabAssembly: {fileID: 1935050934}
 --- !u!1 &180335843
 GameObject:
   m_ObjectHideFlags: 0
@@ -4251,6 +4296,81 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 267042393}
+  m_CullTransparentMesh: 1
+--- !u!1 &269696162
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 269696163}
+  - component: {fileID: 269696165}
+  - component: {fileID: 269696164}
+  m_Layer: 5
+  m_Name: Toppings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &269696163
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269696162}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1935050930}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 60}
+  m_SizeDelta: {x: 150, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &269696164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269696162}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &269696165
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 269696162}
   m_CullTransparentMesh: 1
 --- !u!1 &271367181
 GameObject:
@@ -61344,6 +61464,7 @@ GameObject:
   - component: {fileID: 929137363}
   - component: {fileID: 929137362}
   - component: {fileID: 929137364}
+  - component: {fileID: 929137365}
   m_Layer: 5
   m_Name: Sayur
   m_TagString: Untagged
@@ -61452,6 +61573,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &929137365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 929137360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79396c71a41d0824494ab9bf32f27d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ingredient: {fileID: 11400000, guid: 9d67236d0ac377b48add6c22146a257d, type: 2}
+  kebabAssembly: {fileID: 1935050934}
 --- !u!1 &929291815
 GameObject:
   m_ObjectHideFlags: 0
@@ -63587,6 +63722,7 @@ GameObject:
   - component: {fileID: 1030732600}
   - component: {fileID: 1030732599}
   - component: {fileID: 1030732601}
+  - component: {fileID: 1030732602}
   m_Layer: 5
   m_Name: Sambel
   m_TagString: Untagged
@@ -63695,6 +63831,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1030732602
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1030732597}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79396c71a41d0824494ab9bf32f27d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ingredient: {fileID: 11400000, guid: a1d24efce11df4c4886d423e2f7de38e, type: 2}
+  kebabAssembly: {fileID: 1935050934}
 --- !u!1 &1038405187
 GameObject:
   m_ObjectHideFlags: 0
@@ -65962,6 +66112,7 @@ GameObject:
   - component: {fileID: 1173293944}
   - component: {fileID: 1173293943}
   - component: {fileID: 1173293945}
+  - component: {fileID: 1173293946}
   m_Layer: 5
   m_Name: Sosis
   m_TagString: Untagged
@@ -66070,6 +66221,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1173293946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1173293941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79396c71a41d0824494ab9bf32f27d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ingredient: {fileID: 11400000, guid: 6312ba365e6dcac4cbb233fbbb5c95d8, type: 2}
+  kebabAssembly: {fileID: 1935050934}
 --- !u!1 &1173868350
 GameObject:
   m_ObjectHideFlags: 0
@@ -68129,6 +68294,81 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1285572744}
   m_CullTransparentMesh: 1
+--- !u!1 &1286639705
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1286639706}
+  - component: {fileID: 1286639708}
+  - component: {fileID: 1286639707}
+  m_Layer: 5
+  m_Name: FirstLayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1286639706
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1286639705}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1935050930}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 60}
+  m_SizeDelta: {x: 400, y: 400}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1286639707
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1286639705}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1286639708
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1286639705}
+  m_CullTransparentMesh: 1
 --- !u!1 &1288782717
 GameObject:
   m_ObjectHideFlags: 0
@@ -69978,6 +70218,7 @@ GameObject:
   - component: {fileID: 1406277290}
   - component: {fileID: 1406277289}
   - component: {fileID: 1406277291}
+  - component: {fileID: 1406277292}
   m_Layer: 5
   m_Name: Tomats
   m_TagString: Untagged
@@ -70086,6 +70327,20 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1406277292
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1406277287}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79396c71a41d0824494ab9bf32f27d70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ingredient: {fileID: 11400000, guid: 478051ff46b6faf4eb04731a164b4940, type: 2}
+  kebabAssembly: {fileID: 1935050934}
 --- !u!1 &1441312799
 GameObject:
   m_ObjectHideFlags: 0
@@ -70515,7 +70770,8 @@ MonoBehaviour:
   angryRoll: {fileID: 1282572525}
   moneyRoll: {fileID: 1804796226}
   allWavesCompletePanel: {fileID: 0}
-  activeCustomer: {fileID: 0}
+  kebabResult: {fileID: 11400000, guid: 61ef9cf32627a384699ce6752f6e9ed3, type: 2}
+  activeCustomer: {fileID: 3780969161944566464, guid: 755adc55c127360488d4d782773ca436, type: 3}
 --- !u!1 &1454495731
 GameObject:
   m_ObjectHideFlags: 0
@@ -73078,7 +73334,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1686912921
 RectTransform:
   m_ObjectHideFlags: 0
@@ -77239,6 +77495,7 @@ GameObject:
   - component: {fileID: 1935050932}
   - component: {fileID: 1935050931}
   - component: {fileID: 1935050933}
+  - component: {fileID: 1935050934}
   m_Layer: 5
   m_Name: Ngompor
   m_TagString: Untagged
@@ -77257,7 +77514,9 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1286639706}
+  - {fileID: 269696163}
   m_Father: {fileID: 1892392399}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
@@ -77346,7 +77605,36 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1935050931}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1935050934}
+        m_TargetAssemblyTypeName: KebabAssembly, Assembly-CSharp
+        m_MethodName: ServeKebab
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &1935050934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1935050929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6592f07d5716f92448682ec1dbf857db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  firstLayerParent: {fileID: 1286639706}
+  toppingsParent: {fileID: 269696163}
+  kebabResult: {fileID: 11400000, guid: 61ef9cf32627a384699ce6752f6e9ed3, type: 2}
+  playerInventory: {fileID: 1730039564}
+  tortillaRadius: 70
 --- !u!1 &1941075838
 GameObject:
   m_ObjectHideFlags: 0

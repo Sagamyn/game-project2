@@ -12,7 +12,7 @@ public class CustomerNPC : MonoBehaviour
 
     [Header("Visual")]
     public SpriteRenderer spriteRenderer;
-    
+
     [Header("Thought Bubble - World Space")]
     public GameObject thoughtBubbleObject;
     public SpriteRenderer thoughtBubbleBackground;
@@ -78,13 +78,13 @@ public class CustomerNPC : MonoBehaviour
         if (thoughtBubbleObject != null)
         {
             thoughtBubbleObject.SetActive(true);
-            
+
             if (orderedFoodIcon != null && currentOrder.orderedFood != null)
             {
                 orderedFoodIcon.sprite = currentOrder.orderedFood.icon;
                 orderedFoodIcon.enabled = true;
             }
-            
+
             Debug.Log($"✓ Showing thought bubble for {customerName}");
         }
         else
@@ -158,26 +158,26 @@ public class CustomerNPC : MonoBehaviour
     public void LeaveImmediately()
     {
         if (isLeaving) return;
-        
+
         isLeaving = true;
-        
+
         Debug.Log($"🚪 {customerName} is leaving due to restaurant closure");
-        
+
         StopAllCoroutines();
-        
+
         if (currentOrder != null && currentOrder.status == CustomerOrder.OrderStatus.Waiting)
             currentOrder.status = CustomerOrder.OrderStatus.Failed;
-        
+
         if (thoughtBubbleObject != null)
             thoughtBubbleObject.SetActive(false);
-        
+
         StartCoroutine(MoveOut());
     }
 
     void Leave()
     {
         if (isLeaving) return;
-        
+
         isLeaving = true;
         StartCoroutine(MoveOut());
     }

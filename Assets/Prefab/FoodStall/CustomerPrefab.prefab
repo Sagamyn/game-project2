@@ -109,7 +109,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 309.02, y: 218}
+  m_AnchoredPosition: {x: 426.6, y: 167.8}
   m_SizeDelta: {x: 12.0323, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3987864679998992846
@@ -150,7 +150,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!1 &3110204982621736703
+--- !u!1 &6320872527774756711
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -158,50 +158,50 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8330680153310210674}
-  - component: {fileID: 5578803102808423161}
-  - component: {fileID: 2999044877268332566}
+  - component: {fileID: 7531676750135595477}
+  - component: {fileID: 1390453136987198939}
+  - component: {fileID: 2130633291647931886}
   m_Layer: 5
-  m_Name: FoodIcon
+  m_Name: OrderIconPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!224 &8330680153310210674
+--- !u!224 &7531676750135595477
 RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3110204982621736703}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_GameObject: {fileID: 6320872527774756711}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7633012108496553287}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 75, y: 75}
+  m_AnchorMin: {x: 0, y: 0.5}
+  m_AnchorMax: {x: 0, y: 0.5}
+  m_AnchoredPosition: {x: 131.00006, y: 0}
+  m_SizeDelta: {x: 40, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!222 &5578803102808423161
+--- !u!222 &1390453136987198939
 CanvasRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3110204982621736703}
+  m_GameObject: {fileID: 6320872527774756711}
   m_CullTransparentMesh: 1
---- !u!114 &2999044877268332566
+--- !u!114 &2130633291647931886
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3110204982621736703}
+  m_GameObject: {fileID: 6320872527774756711}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
@@ -255,13 +255,14 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8330680153310210674}
+  - {fileID: 7531676750135595477}
+  - {fileID: 387850610997717895}
   m_Father: {fileID: 2624819938362073592}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 228, y: 218}
-  m_SizeDelta: {x: 150, y: 100}
+  m_AnchoredPosition: {x: 272.05533, y: 167.8}
+  m_SizeDelta: {x: 301.4004, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7553655585565519204
 CanvasRenderer:
@@ -376,6 +377,68 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &8537437580935940570
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 387850610997717895}
+  - component: {fileID: 4534123612400163294}
+  m_Layer: 5
+  m_Name: OrderIconContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &387850610997717895
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8537437580935940570}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7633012108496553287}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -0.036, y: 0.0849}
+  m_SizeDelta: {x: 254.1796, y: 93.8085}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &4534123612400163294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8537437580935940570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 0
+    m_Right: 0
+    m_Top: 0
+    m_Bottom: 0
+  m_ChildAlignment: 4
+  m_Spacing: 5
+  m_ChildForceExpandWidth: 1
+  m_ChildForceExpandHeight: 1
+  m_ChildControlWidth: 0
+  m_ChildControlHeight: 0
+  m_ChildScaleWidth: 0
+  m_ChildScaleHeight: 0
+  m_ReverseArrangement: 0
 --- !u!1 &8924762002796438965
 GameObject:
   m_ObjectHideFlags: 0
@@ -546,7 +609,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   customerImage: {fileID: 3809690112532031552}
   speechBubble: {fileID: 6688193814262558877}
-  speechBubbleFoodIcon: {fileID: 2999044877268332566}
+  tortillaData: {fileID: 11400000, guid: 131ec6671cc36c042891095297afbae6, type: 2}
+  orderIconContainer: {fileID: 387850610997717895}
+  orderIconPrefab: {fileID: 6320872527774756711}
   patienceBar: {fileID: 2785600077226862077}
   happyEffect: {fileID: 8924762002796438965}
   angryEffect: {fileID: 7291140456072195264}
@@ -555,5 +620,5 @@ MonoBehaviour:
   patienceLowColor: {r: 1, g: 0, b: 0, a: 1}
   attackDamage: 1
   impactFrame: {fileID: 6558205221008016610, guid: f67a9e252719aa44d976effe19c2c004, type: 3}
-  audioSource: {fileID: 0}
   smackSound: {fileID: 8300000, guid: 22a2bfa83acaa7c4a886584e3489681f, type: 3}
+  ServePriceOverride: -1

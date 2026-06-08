@@ -16,7 +16,13 @@ MonoBehaviour:
   idleSprite: {fileID: 21300000, guid: a4df790ff6723204ebeae89b3db8924d, type: 3}
   happySprite: {fileID: 0}
   angrySprite: {fileID: 0}
-  possibleOrders:
-  - {fileID: 11400000, guid: 8f2f475ee9b750145a504ad9f115d6e5, type: 2}
+  possibleRecipes:
+  - {fileID: 11400000, guid: 56e148ded37044847a92ec5950b521ee, type: 2}
+  - {fileID: 11400000, guid: 27b96a5c7ff211d48a0ecfb78ea404b4, type: 2}
+  - {fileID: 11400000, guid: 87088786ab37d344e9976ea9a21d76c6, type: 2}
+  - {fileID: 11400000, guid: c823c24fc4406ad4f8efe14b1f59687f, type: 2}
+  - {fileID: 11400000, guid: f346eb806c67614478f7d98dd06de7e8, type: 2}
+  - {fileID: 11400000, guid: 007c3a06a7b56f4489367e1e5021caa2, type: 2}
+  possibleOrders: []
   patience: 10
   payAmount: 50
