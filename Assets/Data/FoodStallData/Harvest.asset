@@ -18,6 +18,6 @@ MonoBehaviour:
   cardSprite: {fileID: 1340080974, guid: c35c5179bb91506449616b0ed23fc3a0, type: 3}
   cardSpriteOutline: {fileID: -490641645, guid: dd5194cedf0e3e247aa651bb32ce8194, type: 3}
   description: The more you had happy customer the more you will get money.
-  price: 50
+  price: 450
   value: 10
   merchantReaction: You a broke ahh nga arent you

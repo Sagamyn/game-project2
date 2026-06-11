@@ -33,6 +33,9 @@ public class FoodStallCustomer : MonoBehaviour
     private float patienceTimer;
     private bool isWaiting = false;
     private bool isLeaving = false;
+    private bool isHappyLeave = false;
+    private bool hasLeft = false;
+    private float lastDisableTime = -1f;
 
     // Harga override dari KebabResult.CalculatePrice()
     [HideInInspector] public int ServePriceOverride = -1;
@@ -42,6 +45,26 @@ public class FoodStallCustomer : MonoBehaviour
 
     public ItemData OrderedItem => orderedItem;
     public KebabRecipeData AssignedRecipe => assignedRecipe;
+    public CustomerData Data => data;
+    public float CurrentPatienceTimer 
+    {
+        get 
+        {
+            if (BuffManager.Instance != null && BuffManager.Instance.noPatience)
+                return TotalPatience;
+
+            if (gameObject.activeInHierarchy || lastDisableTime <= 0f)
+                return patienceTimer;
+                
+            float timePassed = Time.time - lastDisableTime;
+            float multiplier = BuffManager.Instance?.patienceMultiplier ?? 1f;
+            return Mathf.Max(0f, patienceTimer - (timePassed / multiplier));
+        }
+    }
+    public float TotalPatience => (assignedRecipe?.patienceOverride > 0) ? assignedRecipe.patienceOverride : data.patience;
+    public Sprite CustomerSprite => data.idleSprite;
+    public bool IsWaiting => isWaiting;
+    public bool IsLeaving => isLeaving;
 
     // =========================================
     // SPAWN
@@ -85,10 +108,21 @@ public class FoodStallCustomer : MonoBehaviour
             return;
         }
 
-        if (customerImage != null) customerImage.sprite = data.idleSprite;
+        if (customerImage != null) 
+        {
+            customerImage.sprite = data.idleSprite;
+            // Ukuran diperbesar sewajarnya agar kepala tidak terpotong atap warung
+            customerImage.rectTransform.localScale = new Vector3(1.8f, 1.8f, 1f);
+        }
         if (speechBubble != null) speechBubble.SetActive(true);
         if (happyEffect != null) happyEffect.SetActive(false);
         if (angryEffect != null) angryEffect.SetActive(false);
+
+        // Skala speech bubble dikembalikan normal karena parentnya sudah normal
+        if (speechBubble != null)
+        {
+            speechBubble.transform.localScale = Vector3.one;
+        }
 
         float patience = (assignedRecipe?.patienceOverride > 0)
                            ? assignedRecipe.patienceOverride
@@ -123,7 +157,7 @@ public class FoodStallCustomer : MonoBehaviour
             if (img != null)
             {
                 img.sprite = tortillaData.ingredientSprite[0];
-                img.rectTransform.sizeDelta = new Vector2(50f, 50f); // fixed size semua
+                img.rectTransform.sizeDelta = new Vector2(40f, 40f); // fixed size semua
                 // img.SetNativeSize();
             }
         }
@@ -139,7 +173,7 @@ public class FoodStallCustomer : MonoBehaviour
             if (img != null)
             {
                 img.sprite = ingredient.ingredientSprite[0];
-                img.rectTransform.sizeDelta = new Vector2(50f, 50f); // fixed size semua
+                img.rectTransform.sizeDelta = new Vector2(40f, 40f); // fixed size semua
                 // img.SetNativeSize();
             }
         }
@@ -168,13 +202,34 @@ public class FoodStallCustomer : MonoBehaviour
             StartCoroutine(LeaveAngry());
     }
 
+    private static Sprite dummySprite;
+
     void UpdatePatienceBar()
     {
         if (patienceBar == null) return;
 
-        float total = (assignedRecipe?.patienceOverride > 0)
-                        ? assignedRecipe.patienceOverride
-                        : data.patience;
+        // BUG FIX: Jika Temen user tidak menset FillAmount, paksa set di sini
+        if (patienceBar.type != Image.Type.Filled)
+        {
+            patienceBar.type = Image.Type.Filled;
+            patienceBar.fillMethod = Image.FillMethod.Vertical;
+            patienceBar.fillOrigin = (int)Image.OriginVertical.Bottom;
+        }
+
+        // BUG FIX: Image Component di Unity TIDAK AKAN bisa Filled kalau Sprite-nya kosong (None)
+        if (patienceBar.sprite == null)
+        {
+            if (dummySprite == null)
+            {
+                Texture2D tex = new Texture2D(1, 1);
+                tex.SetPixel(0, 0, Color.white);
+                tex.Apply();
+                dummySprite = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f));
+            }
+            patienceBar.sprite = dummySprite;
+        }
+
+        float total = TotalPatience;
         float percent = Mathf.Clamp01(patienceTimer / total);
 
         patienceBar.fillAmount = percent;
@@ -225,6 +280,7 @@ public class FoodStallCustomer : MonoBehaviour
     {
         isWaiting = false;
         isLeaving = true;
+        isHappyLeave = true;
 
         if (speechBubble != null) speechBubble.SetActive(false);
         if (patienceBar != null) patienceBar.gameObject.SetActive(false);
@@ -237,15 +293,7 @@ public class FoodStallCustomer : MonoBehaviour
         yield return new WaitForSeconds(1.2f);
         yield return StartCoroutine(SlideOut());
 
-        float multiplier = BuffManager.Instance?.moneyMultiplier ?? 1f;
-        int bonus = BuffManager.Instance?.bonusPerHappyCustomer ?? 0;
-
-        // Pakai ServePriceOverride kalau ada (dari KebabResult.CalculatePrice)
-        int baseAmount = ServePriceOverride >= 0 ? ServePriceOverride : data.payAmount;
-        int finalPay = Mathf.RoundToInt(baseAmount * multiplier) + bonus;
-
-        OnLeft?.Invoke(this, true, finalPay);
-        Destroy(gameObject);
+        CompleteLeave();
     }
 
     // =========================================
@@ -256,6 +304,7 @@ public class FoodStallCustomer : MonoBehaviour
     {
         isWaiting = false;
         isLeaving = true;
+        isHappyLeave = false;
 
         if (speechBubble != null) speechBubble.SetActive(false);
         if (patienceBar != null) patienceBar.gameObject.SetActive(false);
@@ -266,8 +315,16 @@ public class FoodStallCustomer : MonoBehaviour
         if (angryEffect != null) angryEffect.SetActive(true);
 
         bool isInvincible = BuffManager.Instance?.isInvincible ?? false;
+        bool skipDamage = false;
 
-        if (!isInvincible)
+        if (BuffManager.Instance != null && BuffManager.Instance.skipAngryCount > 0)
+        {
+            BuffManager.Instance.skipAngryCount--;
+            skipDamage = true;
+            Debug.Log("Skipped damage from angry customer due to buff!");
+        }
+
+        if (!isInvincible && !skipDamage)
         {
             PlayerHealth.Instance?.TakeDamage(attackDamage);
 
@@ -283,13 +340,61 @@ public class FoodStallCustomer : MonoBehaviour
             }
         }
 
-        bool stillPays = BuffManager.Instance?.angryCustomerStillPays ?? false;
-
         yield return new WaitForSeconds(1f);
         yield return StartCoroutine(SlideOut());
 
-        OnLeft?.Invoke(this, stillPays, stillPays ? data.payAmount : 0);
+        CompleteLeave();
+    }
+
+    private void CompleteLeave()
+    {
+        if (hasLeft) return; // Mencegah double trigger
+        hasLeft = true;
+
+        if (isHappyLeave)
+        {
+            float multiplier = BuffManager.Instance?.moneyMultiplier ?? 1f;
+            int bonus = BuffManager.Instance?.bonusPerHappyCustomer ?? 0;
+
+            // Pakai ServePriceOverride kalau ada (dari KebabResult.CalculatePrice)
+            int baseAmount = ServePriceOverride >= 0 ? ServePriceOverride : data.payAmount;
+            int finalPay = Mathf.RoundToInt(baseAmount * multiplier) + bonus;
+
+            OnLeft?.Invoke(this, true, finalPay);
+        }
+        else
+        {
+            bool stillPays = BuffManager.Instance?.angryCustomerStillPays ?? false;
+            // success tetap false walau dia masih bayar, agar tercatat marah di Result
+            OnLeft?.Invoke(this, false, stillPays ? data.payAmount : 0);
+        }
+
         Destroy(gameObject);
+    }
+
+    private void OnDisable()
+    {
+        lastDisableTime = Time.time;
+
+        // BUG FIX: Jika customer di-disable (karena pindah POV) SAAT dia sedang leave,
+        // Coroutine akan mati. Kita paksa selesaikan transaksinya agar antrean tidak stuck.
+        if (isLeaving && !hasLeft)
+        {
+            CompleteLeave();
+        }
+    }
+
+    private void OnEnable()
+    {
+        // Hitung waktu yang berlalu selama object ini didisable (karena pindah POV)
+        if (lastDisableTime > 0f && isWaiting && !isLeaving)
+        {
+            float timePassed = Time.time - lastDisableTime;
+            float multiplier = BuffManager.Instance?.patienceMultiplier ?? 1f;
+            patienceTimer -= timePassed / multiplier;
+            
+            UpdatePatienceBar();
+        }
     }
 
     // =========================================
@@ -315,7 +420,8 @@ public class FoodStallCustomer : MonoBehaviour
 
     IEnumerator SlideIn()
     {
-        Vector3 startPos = transform.localPosition + Vector3.down * 300f;
+        // Muncul dari arah kiri (Vector3.left)
+        Vector3 startPos = transform.localPosition + Vector3.left * 600f;
         Vector3 endPos = transform.localPosition;
         transform.localPosition = startPos;
 
@@ -333,7 +439,8 @@ public class FoodStallCustomer : MonoBehaviour
     IEnumerator SlideOut()
     {
         Vector3 startPos = transform.localPosition;
-        Vector3 endPos = transform.localPosition + Vector3.down * 300f;
+        // Pergi ke arah kanan (Vector3.right)
+        Vector3 endPos = transform.localPosition + Vector3.right * 600f;
 
         float duration = 0.3f, elapsed = 0f;
         while (elapsed < duration)

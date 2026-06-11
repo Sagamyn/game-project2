@@ -52,16 +52,28 @@ public class DayNightManager : MonoBehaviour
     private bool isSleeping = false; // Prevent day checks during sleep
     private bool isProcessingSleep = false; // Prevent multiple sleep calls
 
-    void Start()
+    void Awake()
     {
         if (mainCamera == null)
         {
             mainCamera = Camera.main;
         }
+
+        // Cek apakah tutorial sudah tamat
+        if (PlayerPrefs.GetInt("TutorialCompleted", 0) == 1)
+        {
+            currentDay = 1;
+        }
+        else
+        {
+            currentDay = 0; // Wave-0 untuk Tutorial
+        }
         
         lastDay = currentDay;
         UpdateLighting();
     }
+
+
 
     void Update()
     {
@@ -244,6 +256,12 @@ public class DayNightManager : MonoBehaviour
         // Advance to next day
         currentDay++;
         currentTime = 6f; // Wake up at 6 AM
+
+        if (currentDay == 1)
+        {
+            PlayerPrefs.SetInt("TutorialCompleted", 1);
+            PlayerPrefs.Save();
+        }
         
         // Unfreeze time
         timeIsFrozen = false;

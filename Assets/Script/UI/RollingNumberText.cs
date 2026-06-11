@@ -38,29 +38,27 @@ public class RollingNumberText : MonoBehaviour
             // Speed slows near end
             float progress = timer / duration;
 
-            // Random fake number
-            int fakeNumber =
-                Random.Range(fakeMin, fakeMax);
+            // Ease Out Cubic: mulai cepat, lambat di akhir
+            float easeOut = 1f - Mathf.Pow(1f - progress, 3f);
 
-            textUI.text = prefix + fakeNumber;
+            // Hitung angka saat ini secara berurutan, bukan acak
+            int currentAnimNumber = Mathf.RoundToInt(Mathf.Lerp(0, target, easeOut));
+
+            textUI.text = prefix + currentAnimNumber.ToString("N0");
 
             // Tick tick tick sound
             tickTimer += Time.deltaTime;
 
             // Faster at start, slower near end
-            float currentTickRate =
-                Mathf.Lerp(0.03f, 0.2f, progress);
+            float currentTickRate = Mathf.Lerp(0.05f, 0.2f, progress);
 
             if (tickTimer >= currentTickRate)
             {
                 tickTimer = 0;
 
-                if (audioSource != null &&
-                    tickSound != null)
+                if (audioSource != null && tickSound != null)
                 {
-                    audioSource.pitch =
-                        Random.Range(0.95f, 1.05f);
-
+                    audioSource.pitch = Random.Range(0.95f, 1.05f);
                     audioSource.PlayOneShot(tickSound);
                 }
             }
@@ -69,7 +67,7 @@ public class RollingNumberText : MonoBehaviour
         }
 
         // Final value
-        textUI.text = prefix + target;
+        textUI.text = prefix + target.ToString("N0");
 
         // Final stop sound
         if (audioSource != null &&

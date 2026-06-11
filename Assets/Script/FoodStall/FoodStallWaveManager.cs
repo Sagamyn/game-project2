@@ -71,7 +71,9 @@ public class FoodStallWaveManager : MonoBehaviour
     private int angryCustomers = 0;
 
     private bool isRunning = false;
+    public bool IsRunning => isRunning;
     private bool waitingForContinue = false;
+    private bool isAnimatingResult = false;
 
     public static bool CanSleep = false;
     // Locked after wave session ends; unlocked when player sleeps
@@ -188,14 +190,54 @@ public class FoodStallWaveManager : MonoBehaviour
     {
         activeCustomer = null;
         currentCustomerIndex = 0;
+        
+        // Reset stat gelombang / hari
+        customersServed = 0;
+        happyCustomers = 0;
+        angryCustomers = 0;
+        totalMoneyEarned = 0;
+        
         UpdateWaveUI();
+
+        int currentDay = FindObjectOfType<DayNightManager>() != null ? FindObjectOfType<DayNightManager>().currentDay : 1;
+        
+        bool isTutorialDay = (currentDay == 0);
+        bool originalNoPatience = false;
+        
+        if (BuffManager.Instance != null)
+        {
+            originalNoPatience = BuffManager.Instance.noPatience;
+            
+            if (isTutorialDay)
+            {
+                BuffManager.Instance.noPatience = true; // Infinite patience for tutorial
+                Debug.Log("Day 1 Tutorial Active: Infinite Patience!");
+            }
+            else
+            {
+                // Difficulty scaling: patience drops faster by 5% per day, max 50% faster
+                float difficultyDrop = Mathf.Min(0.5f, (currentDay - 1) * 0.05f);
+                BuffManager.Instance.patienceMultiplier -= difficultyDrop;
+                Debug.Log($"Day {currentDay} Difficulty: Patience drops {difficultyDrop*100}% faster.");
+            }
+        }
 
         Debug.Log($"Starting {wave.waveName}");
 
         yield return new WaitForSeconds(1f);
 
-        foreach (var customerData in wave.customers)
+        int totalCustomers = wave.customers.Length;
+        int reduceBy = 0;
+        if (BuffManager.Instance != null)
         {
+            reduceBy = BuffManager.Instance.fewerCustomers;
+        }
+        int customersToSpawn = Mathf.Max(1, totalCustomers - reduceBy);
+
+        for (int i = 0; i < customersToSpawn; i++)
+        {
+            var customerData = wave.customers[i];
+            
             if (!isRunning)
                 yield break;
 
@@ -231,6 +273,17 @@ public class FoodStallWaveManager : MonoBehaviour
         // Wave Complete — one random wave per session, then end the day
         yield return StartCoroutine(ShowWaveComplete(wave));
 
+        // Restore state after wave
+        if (BuffManager.Instance != null)
+        {
+            BuffManager.Instance.noPatience = originalNoPatience;
+            if (!isTutorialDay)
+            {
+                float difficultyDrop = Mathf.Min(0.5f, (currentDay - 1) * 0.05f);
+                BuffManager.Instance.patienceMultiplier += difficultyDrop;
+            }
+        }
+
         StartCoroutine(ShowAllComplete());
     }
 
@@ -254,6 +307,8 @@ public class FoodStallWaveManager : MonoBehaviour
             Quaternion.identity,
             customerSpawnPoint
         );
+        // Kita kembalikan ke skala 1, agar speech bubble tidak ikutan jadi raksasa
+        obj.transform.localScale = Vector3.one;
 
         FoodStallCustomer customer =
             obj.GetComponent<FoodStallCustomer>();
@@ -283,19 +338,24 @@ public class FoodStallWaveManager : MonoBehaviour
         if (success)
         {
             happyCustomers++;
+        }
+        else
+        {
+            angryCustomers++;
+        }
 
+        if (pay > 0)
+        {
             totalMoneyEarned += pay;
 
             if (playerMoney != null)
                 playerMoney.AddMoney(pay);
 
-            Debug.Log($"Served customer! +${pay}");
-        }
-        else
-        {
-            angryCustomers++;
+            // Show Floating Text Money if available
+            Vector3 popPos = customerSpawnPoint != null ? customerSpawnPoint.position + Vector3.up * 2f : Vector3.zero;
+            FloatingTextManager.Instance?.ShowText($"+${pay}", popPos, Color.green);
 
-            Debug.Log("Customer left angry!");
+            Debug.Log($"Collected ${pay} from customer (success: {success})");
         }
 
         if (moneyEarnedText != null)
@@ -368,6 +428,11 @@ public class FoodStallWaveManager : MonoBehaviour
 
     IEnumerator ShowWaveComplete(FoodStallWaveData wave)
     {
+        // Sembunyikan tombol Continue SEPENUHNYA selama animasi berjalan
+        isAnimatingResult = true;
+        if (continueButton != null)
+            continueButton.gameObject.SetActive(false);
+
         // Bonus reward
         if (wave.waveCompletionBonus > 0)
         {
@@ -442,6 +507,11 @@ public class FoodStallWaveManager : MonoBehaviour
 
         }
 
+        // Animasi selesai, munculkan tombol Continue
+        isAnimatingResult = false;
+        if (continueButton != null)
+            continueButton.gameObject.SetActive(true);
+
         // WAIT FOR PLAYER TO CLICK CONTINUE
         waitingForContinue = true;
 
@@ -454,9 +524,23 @@ public class FoodStallWaveManager : MonoBehaviour
 
         if (merchant != null)
         {
-            yield return StartCoroutine(
-                merchant.AppearFromDark()
-            );
+            int currentDay = FindObjectOfType<DayNightManager>() != null ? FindObjectOfType<DayNightManager>().currentDay : 1;
+            if (currentDay > 0) // Jangan spawn merchant di hari tutorial
+            {
+                yield return StartCoroutine(
+                    merchant.AppearFromDark()
+                );
+            }
+            else 
+            {
+                // Kalau tutorial, langsung selesai tanpa merchant
+                OnMerchantShopDone();
+            }
+        }
+        else 
+        {
+            // Kalau nggak ada merchant sama sekali
+            OnMerchantShopDone();
         }
     }
 
@@ -466,12 +550,10 @@ public class FoodStallWaveManager : MonoBehaviour
 
     public void OnContinuePressed()
     {
-        waitingForContinue = false;
+        // GUARD: Jangan lakukan apapun jika animasi masih berjalan
+        if (isAnimatingResult) return;
 
-        if (merchant != null)
-        {
-            merchant.Hide();
-        }
+        waitingForContinue = false;
 
         if (waveCompletePanel != null)
             waveCompletePanel.SetActive(false);

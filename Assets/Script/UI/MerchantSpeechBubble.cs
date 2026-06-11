@@ -24,9 +24,12 @@ public class MerchantSpeechBubble : MonoBehaviour
     private bool isVisible = false;
     private Coroutine typewriterCoroutine;
     private float talkSoundTimer;
+    private Button bubbleButton;
 
     void Awake()
     {
+        bubbleButton = GetComponent<Button>();
+
         // Disable animator so it doesnt play on start
         if (bubbleAnimator != null)
             bubbleAnimator.enabled = false;
@@ -47,6 +50,9 @@ public class MerchantSpeechBubble : MonoBehaviour
 
     public IEnumerator ShowAndType(string text)
     {
+        // Nonaktifkan tombol agar tidak bisa diklik saat sedang ngetik (tanpa meredupkan warna)
+        if (bubbleButton != null) bubbleButton.enabled = false;
+
         // First time showing — play pop up animation
         if (!isVisible)
         {
@@ -151,6 +157,9 @@ public class MerchantSpeechBubble : MonoBehaviour
         }
 
         typewriterCoroutine = null;
+
+        // Ketikan selesai, aktifkan tombol lagi jika player ingin klik untuk lanjut
+        if (bubbleButton != null) bubbleButton.enabled = true;
     }
 
     void PlayTalkSound()

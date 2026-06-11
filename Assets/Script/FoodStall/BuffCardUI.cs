@@ -79,6 +79,9 @@ public class BuffCardUI : MonoBehaviour,
         isSelected     = false;
         isHovered      = false;
 
+        if (cardImage != null)
+            cardImage.raycastPadding = Vector4.zero;
+
         gameObject.SetActive(false);
     }
 
@@ -145,6 +148,9 @@ public class BuffCardUI : MonoBehaviour,
         isInteractable = false;
         isHovered      = false;
 
+        if (cardImage != null)
+            cardImage.raycastPadding = Vector4.zero;
+
         SetTextVisible(false);
 
         if (detailPanel != null)
@@ -193,6 +199,7 @@ public class BuffCardUI : MonoBehaviour,
         if (!isInteractable || isSelected) return;
 
         isHovered = true;
+        if (cardImage != null) cardImage.raycastPadding = new Vector4(-30f, -(hoverLiftAmount + 20f), -30f, -10f);
 
         // Swap to outline sprite
         if (cardImage != null && outlineSprite != null)
@@ -209,6 +216,7 @@ public class BuffCardUI : MonoBehaviour,
         if (!isInteractable || isSelected) return;
 
         isHovered = false;
+        if (cardImage != null) cardImage.raycastPadding = Vector4.zero;
 
         // Swap back to normal sprite
         if (cardImage != null && normalSprite != null)
@@ -258,6 +266,7 @@ public class BuffCardUI : MonoBehaviour,
         isSelected     = true;
         isInteractable = false;
         isHovered      = false;
+        if (cardImage != null) cardImage.raycastPadding = Vector4.zero;
 
         if (hoverCoroutine != null) StopCoroutine(hoverCoroutine);
 
@@ -469,5 +478,6 @@ public class BuffCardUI : MonoBehaviour,
         isSelected     = false;
         isInteractable = false;
         isHovered      = false;
+        if (cardImage != null) cardImage.raycastPadding = Vector4.zero;
     }
 }

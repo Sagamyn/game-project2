@@ -18,6 +18,6 @@ MonoBehaviour:
   cardSprite: {fileID: 1750912073, guid: c35c5179bb91506449616b0ed23fc3a0, type: 3}
   cardSpriteOutline: {fileID: -1897322563, guid: dd5194cedf0e3e247aa651bb32ce8194, type: 3}
   description: You get healing thats all.
-  price: 30
+  price: 250
   value: 1
   merchantReaction: Stay Healty Stranger

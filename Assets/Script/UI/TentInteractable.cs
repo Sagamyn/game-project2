@@ -55,7 +55,9 @@ public class TentInteractable : MonoBehaviour
         eKeyPrompt?.Hide();
         isConfirmOpen = true;
 
-        // Show Yes/No panel
+        int currentDay = dayNightManager != null ? dayNightManager.currentDay : 1;
+
+        // Show Yes/No panel biasa
         sleepConfirmUI?.Show(
             yesCallback: OnConfirmSleep,
             noCallback:  OnCancelSleep

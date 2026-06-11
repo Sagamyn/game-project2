@@ -26,40 +26,64 @@ public class CookingTemperatureMinigame : MonoBehaviour
     private bool isPlaying;
     private MinigameDifficulty activeDifficulty;
     private CookingStation currentStation;
+    private System.Action<bool> onCompleteCallback;
     private float barHeight;
     private float catchBarHeight;
 
     public void StartMinigame(CookingStation station)
     {
+        onCompleteCallback = null;
         StartMinigame(station, null);
+    }
+
+    /// <summary>
+    /// Overload untuk dipanggil dari CookingPOVMinigameFlow (tanpa CookingStation).
+    /// </summary>
+    public void StartMinigame(System.Action<bool> onComplete, MinigameDifficulty difficulty = null)
+    {
+        onCompleteCallback = onComplete;
+        currentStation = null;
+
+        // Resolve difficulty
+        if (difficulty != null && difficulty.catchBarSize > 0f && difficulty.targetSpeed > 0f && difficulty.pushForce > 0f)
+            activeDifficulty = difficulty;
+        else
+            activeDifficulty = defaultDifficulty;
+
+        StartMinigameInternal();
     }
 
     public void StartMinigame(CookingStation station, Recipe recipe)
     {
+        onCompleteCallback = null;
+        currentStation = station;
+        activeDifficulty = ResolveDifficulty(recipe);
+        StartMinigameInternal();
+    }
+
+    /// <summary>
+    /// Internal shared startup logic.
+    /// </summary>
+    private void StartMinigameInternal()
+    {
         if (verticalBar == null)
         {
             Debug.LogError("[CookingTemperatureMinigame] 'verticalBar' belum di-assign.");
-            currentStation = station;
             EndMinigame(false);
             return;
         }
         if (catchBar == null)
         {
             Debug.LogError("[CookingTemperatureMinigame] 'catchBar' belum di-assign.");
-            currentStation = station;
             EndMinigame(false);
             return;
         }
         if (target == null)
         {
             Debug.LogError("[CookingTemperatureMinigame] 'target' belum di-assign.");
-            currentStation = station;
             EndMinigame(false);
             return;
         }
-
-        currentStation = station;
-        activeDifficulty = ResolveDifficulty(recipe);
 
         if (activeDifficulty == null
             || activeDifficulty.catchBarSize <= 0f
@@ -237,11 +261,22 @@ public class CookingTemperatureMinigame : MonoBehaviour
         if (uiAnimator != null) uiAnimator.HideInstant();
         else gameObject.SetActive(false);
 
+        // Callback mode (dari CookingPOVMinigameFlow)
+        if (onCompleteCallback != null)
+        {
+            var cb = onCompleteCallback;
+            onCompleteCallback = null;
+            currentStation = null;
+            cb.Invoke(success);
+            return;
+        }
+
+        // Station mode (dari CookingStation)
         var finished = currentStation;
         currentStation = null;
 
         if (finished != null) finished.OnMinigameComplete(success);
-        else Debug.LogWarning("[CookingTemperatureMinigame] EndMinigame called without station.");
+        else Debug.LogWarning("[CookingTemperatureMinigame] EndMinigame called without station or callback.");
     }
 }
 

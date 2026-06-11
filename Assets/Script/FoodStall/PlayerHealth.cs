@@ -49,6 +49,10 @@ public class PlayerHealth : MonoBehaviour
         currentHealth -= amount;
         currentHealth = Mathf.Max(0, currentHealth);
         StartCoroutine(FlashDamage());
+        CameraShake.Instance?.TriggerShake(0.5f, 0.5f);
+        
+        // Show Floating Text Damage if available
+        FloatingTextManager.Instance?.ShowText($"-{amount} HP", transform.position + Vector3.up * 1.5f, Color.red);
 
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 

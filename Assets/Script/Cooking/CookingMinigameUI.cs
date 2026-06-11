@@ -74,13 +74,22 @@ public class CookingMinigameUI : MonoBehaviour
         if (minigameContainer != null)
             originalContainerPos = minigameContainer.anchoredPosition;
 
-        // Fade in background dim
+        // Fade in background dim (Disabled per user request)
         if (backgroundDim != null)
         {
-            backgroundDim.gameObject.SetActive(true);
-            backgroundDim.CrossFadeAlpha(0f, 0f, true);
-            backgroundDim.CrossFadeAlpha(1f, 0.3f, false);
+            backgroundDim.color = Color.clear;
+            backgroundDim.gameObject.SetActive(false);
         }
+
+        // Hapus juga background tipis dari container (akar masalahnya)
+        if (minigameContainer != null)
+        {
+            Image containerImg = minigameContainer.GetComponent<Image>();
+            if (containerImg != null) containerImg.color = Color.clear;
+        }
+
+        Image selfImg = GetComponent<Image>();
+        if (selfImg != null) selfImg.color = Color.clear;
 
         // Show instruction text
         if (instructionText != null)
@@ -130,9 +139,12 @@ public class CookingMinigameUI : MonoBehaviour
             resultCoroutine = StartCoroutine(ResultPunchAnimation(resultText.rectTransform));
         }
 
-        // Fade out background
+        // Fade out background (Disabled per user request)
         if (backgroundDim != null)
-            backgroundDim.CrossFadeAlpha(0f, 0.6f, false);
+        {
+            backgroundDim.gameObject.SetActive(false);
+            // backgroundDim.CrossFadeAlpha(0f, 0.6f, false);
+        }
 
         // Reset shake position
         if (minigameContainer != null)
