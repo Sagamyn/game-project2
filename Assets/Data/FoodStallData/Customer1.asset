@@ -24,5 +24,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f346eb806c67614478f7d98dd06de7e8, type: 2}
   - {fileID: 11400000, guid: 007c3a06a7b56f4489367e1e5021caa2, type: 2}
   possibleOrders: []
-  patience: 10
+  patience: 30
   payAmount: 50

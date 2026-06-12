@@ -18,6 +18,6 @@ MonoBehaviour:
   cardSprite: {fileID: -642723471, guid: c35c5179bb91506449616b0ed23fc3a0, type: 3}
   cardSpriteOutline: {fileID: 1333502525, guid: dd5194cedf0e3e247aa651bb32ce8194, type: 3}
   description: Just give them any food they will pay anyway.
-  price: 150
+  price: 1500
   value: 1
   merchantReaction: LMAO

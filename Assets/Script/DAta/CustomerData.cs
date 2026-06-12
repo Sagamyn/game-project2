@@ -20,7 +20,7 @@ public class CustomerData : ScriptableObject
 
 
     [Header("Patience")]
-    public float patience = 15f;
+    public float patience = 30f;
 
     [Header("Reward")]
     public int payAmount = 50;

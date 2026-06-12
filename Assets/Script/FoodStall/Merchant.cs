@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 
 public class Merchant : MonoBehaviour
 {
@@ -31,6 +32,16 @@ public class Merchant : MonoBehaviour
     [Header("Shop")]
     public MerchantShop merchantShop;
 
+    [Header("Debt Collection")]
+    public GameObject debtButtonContainer;
+    public Button payButton;
+    public Button refuseButton;
+    public TextMeshProUGUI payButtonText;
+    
+    private int requiredDebtAmount = 0;
+    private bool hasPaidDebt = false;
+    private bool debtDecisionMade = false;
+
     private Vector2 originalPosition;
     private Coroutine bobCoroutine;
     private bool isBobbing = false;
@@ -57,6 +68,15 @@ public class Merchant : MonoBehaviour
         // Keep SpeechBubble active so coroutines can run
         if (speechBubble != null)
             speechBubble.gameObject.SetActive(true);
+
+        if (payButton != null)
+            payButton.onClick.AddListener(OnPayClicked);
+            
+        if (refuseButton != null)
+            refuseButton.onClick.AddListener(OnRefuseClicked);
+            
+        if (debtButtonContainer != null)
+            debtButtonContainer.SetActive(false);
     }
 
     void HideInstant()
@@ -132,12 +152,125 @@ public class Merchant : MonoBehaviour
         // Small pause before talking
         yield return new WaitForSeconds(0.3f);
 
-        // Play intro dialogue
-        yield return StartCoroutine(PlayIntroDialogue());
+        int currentDay = FindObjectOfType<DayNightManager>() != null ? FindObjectOfType<DayNightManager>().currentDay : 1;
 
-        // After talking, show buff cards
-        if (merchantShop != null)
-            yield return StartCoroutine(merchantShop.StartShop());
+        // Cek apakah hari ini hari penagihan hutang (Kelipatan 7)
+        if (currentDay > 0 && currentDay % 7 == 0)
+        {
+            // Mode Penagihan Hutang
+            yield return StartCoroutine(PlayDebtDialogue(currentDay));
+        }
+        else
+        {
+            // Play intro dialogue biasa
+            yield return StartCoroutine(PlayIntroDialogue());
+
+            // After talking, show buff cards
+            if (merchantShop != null)
+                yield return StartCoroutine(merchantShop.StartShop());
+        }
+    }
+
+    public int CalculateDebt(int currentDay)
+    {
+        // Tagihan awal $500, lalu naik x1.2 setiap kelipatan 7
+        int cycle = currentDay / 7;
+        if (cycle < 1) cycle = 1;
+        return Mathf.RoundToInt(500f * Mathf.Pow(1.2f, cycle - 1));
+    }
+
+    IEnumerator PlayDebtDialogue(int currentDay)
+    {
+        if (speechBubble == null) yield break;
+
+        requiredDebtAmount = CalculateDebt(currentDay);
+        debtDecisionMade = false;
+        hasPaidDebt = false;
+
+        speechBubble.gameObject.SetActive(true);
+
+        string greeting = (currentDay > 7) ? "Kau bertahan cukup lama ya..." : "Halo lagi, kawan lamaku...";
+        yield return StartCoroutine(speechBubble.ShowAndType(greeting));
+        yield return new WaitForSeconds(1f);
+
+        string demand = $"Waktunya membayar setoran mingguan. Serahkan padaku sejumlah ${requiredDebtAmount} SEKARANG JUGA!";
+        yield return StartCoroutine(speechBubble.ShowAndType(demand));
+
+        if (payButtonText != null)
+            payButtonText.text = $"Bayar ${requiredDebtAmount}";
+
+        if (debtButtonContainer != null)
+            debtButtonContainer.SetActive(true);
+
+        if (payButton != null) payButton.interactable = true;
+        if (refuseButton != null) refuseButton.interactable = true;
+
+        // Tunggu sampai pemain memilih
+        while (!debtDecisionMade)
+        {
+            yield return null;
+        }
+
+        if (debtButtonContainer != null)
+            debtButtonContainer.SetActive(false);
+
+        if (hasPaidDebt)
+        {
+            yield return StartCoroutine(speechBubble.ShowAndType("Hahaha... Bagus sekali. Bekerja keraslah untuk bertahan hidup minggu depan!"));
+            yield return new WaitForSeconds(2f);
+            yield return StartCoroutine(speechBubble.Hide());
+
+            // Lanjut ke toko buff biasa!
+            if (merchantShop != null)
+                yield return StartCoroutine(merchantShop.StartShop());
+        }
+        else
+        {
+            // Game over dipanggil dari coroutine FailRoutine
+            yield break;
+        }
+    }
+
+    public void OnPayClicked()
+    {
+        if (payButton != null) payButton.interactable = false;
+        if (refuseButton != null) refuseButton.interactable = false;
+
+        PlayerMoney pm = FindObjectOfType<PlayerMoney>();
+        if (pm != null && pm.CurrentMoney >= requiredDebtAmount)
+        {
+            pm.RemoveMoney(requiredDebtAmount);
+            hasPaidDebt = true;
+            debtDecisionMade = true;
+        }
+        else
+        {
+            StartCoroutine(FailRoutine("Beraninya kau menipuku! Uangmu tidak cukup, MATILAH!"));
+        }
+    }
+
+    public void OnRefuseClicked()
+    {
+        if (payButton != null) payButton.interactable = false;
+        if (refuseButton != null) refuseButton.interactable = false;
+        
+        StartCoroutine(FailRoutine("Menolak? Bodoh sekali! MATILAH!"));
+    }
+
+    private IEnumerator FailRoutine(string failMessage)
+    {
+        debtDecisionMade = true;
+        
+        if (debtButtonContainer != null)
+            debtButtonContainer.SetActive(false);
+
+        yield return StartCoroutine(speechBubble.ShowAndType(failMessage));
+        yield return new WaitForSeconds(2f);
+
+        if (GameOverManager.Instance != null)
+        {
+            GameOverManager.Instance.ShowCustomGameOver("DIEKSEKUSI IBLIS");
+        }
     }
 
     IEnumerator PlayIntroDialogue()

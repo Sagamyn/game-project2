@@ -37,10 +37,27 @@ public class CookingPlatingMinigame : MonoBehaviour
     private float zoneLowAngle;
     private float zoneHighAngle;
     private CookingStation currentStation;
+    private System.Action<bool> onCompleteCallback;
+
+    /// <summary>
+    /// Overload untuk dipanggil dari CookingPOVMinigameFlow (tanpa CookingStation).
+    /// </summary>
+    public void StartMinigame(System.Action<bool> onComplete)
+    {
+        onCompleteCallback = onComplete;
+        currentStation = null;
+        StartMinigameInternal();
+    }
 
     public void StartMinigame(CookingStation station)
     {
+        onCompleteCallback = null;
         currentStation = station;
+        StartMinigameInternal();
+    }
+
+    private void StartMinigameInternal()
+    {
         currentAngle = 0f;
         isPlaying = true;
 
@@ -161,6 +178,17 @@ public class CookingPlatingMinigame : MonoBehaviour
         else
             gameObject.SetActive(false);
 
+        // Callback mode (dari CookingPOVMinigameFlow)
+        if (onCompleteCallback != null)
+        {
+            var cb = onCompleteCallback;
+            onCompleteCallback = null;
+            currentStation = null;
+            cb.Invoke(success);
+            yield break;
+        }
+
+        // Station mode (dari CookingStation)
         if (currentStation != null)
             currentStation.OnPlatingComplete(success);
     }

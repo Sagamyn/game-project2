@@ -62,6 +62,9 @@ public class SleepConfirmUI : MonoBehaviour
 
     public void Hide()
     {
+        if (!gameObject.activeInHierarchy || (panel != null && !panel.activeInHierarchy)) 
+            return;
+
         if (uiAnimator != null)
             uiAnimator.Hide();
         else if (panel != null)

@@ -19,6 +19,6 @@ MonoBehaviour:
   cardSpriteOutline: {fileID: -1380698835, guid: dd5194cedf0e3e247aa651bb32ce8194, type: 3}
   description: The Customer will be so patience that they doesnt care how long will
     it takes.
-  price: 80
+  price: 750
   value: 999
   merchantReaction: Dont Slack Off.

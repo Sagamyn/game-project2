@@ -18,6 +18,6 @@ MonoBehaviour:
   cardSprite: {fileID: 389092018, guid: c35c5179bb91506449616b0ed23fc3a0, type: 3}
   cardSpriteOutline: {fileID: 678166456, guid: dd5194cedf0e3e247aa651bb32ce8194, type: 3}
   description: You cant get hurt.
-  price: 100
+  price: 350
   value: 1
   merchantReaction: You are cheating arent you?

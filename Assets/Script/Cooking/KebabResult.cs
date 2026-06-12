@@ -22,6 +22,7 @@ public class KebabResult
     {
         if (recipe == null) return false;
 
+        // 1. Cek apakah semua bahan wajib ada
         foreach (var required in recipe.requiredIngredients)
         {
             bool found = ingredients.Exists(
@@ -32,6 +33,28 @@ public class KebabResult
             Debug.Log($"Check: {required.ingredientName} → {(found ? "ADA" : "TIDAK ADA")}");
 
             if (!found) return false;
+        }
+
+        // 2. Cek apakah ada bahan berlebih / salah (selain tortilla)
+        foreach (var ing in ingredients)
+        {
+            if (ing.isTortilla) continue;
+
+            bool isRequired = false;
+            foreach (var required in recipe.requiredIngredients)
+            {
+                if (ing.ingredientName.Trim().ToLower() == required.ingredientName.Trim().ToLower())
+                {
+                    isRequired = true;
+                    break;
+                }
+            }
+
+            if (!isRequired)
+            {
+                Debug.Log($"Extra/Wrong Ingredient Found: {ing.ingredientName}. Order ditolak!");
+                return false;
+            }
         }
 
         return true;

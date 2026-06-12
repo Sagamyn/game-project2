@@ -45,8 +45,8 @@ public class BuffManager : MonoBehaviour
             // ── Permanent: takes effect immediately ──
             case BuffType.HealPlayer:
                 PlayerHealth.Instance?.Heal((int)buff.value);
-                permanentBuffs.Add(buff);
-                Debug.Log($"Permanent buff applied: {buff.buffName}");
+                // Do not add to permanentBuffs since it is an instant consumable
+                Debug.Log($"Instant consumable buff applied: {buff.buffName}");
                 break;
 
             case BuffType.MaxHealthUp:
