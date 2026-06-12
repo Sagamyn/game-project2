@@ -52,6 +52,7 @@ public class MerchantShop : MonoBehaviour
     public Button skipButton;
 
     // Runtime
+    public bool IsCardSelected() => selectedCard != null;
     private List<BuffData> currentOfferedBuffs = new List<BuffData>();
     private int currentRerollCost;
     private bool cardsInteractable = false;
@@ -184,7 +185,7 @@ public class MerchantShop : MonoBehaviour
         // Merchant kasih reaksi singkat
         if (speechBubble != null)
         {
-            yield return StartCoroutine(speechBubble.ShowAndType("Baiklah, lain kali saja."));
+            yield return StartCoroutine(speechBubble.ShowAndType("I guess you didn't have money for that."));
             yield return new WaitForSeconds(0.8f);
             yield return StartCoroutine(speechBubble.Hide());
         }

@@ -32,11 +32,11 @@ public class TutorialDialogueManager : MonoBehaviour
         if (tutorialPanel != null)
         {
             tutorialPanel.SetActive(false);
-            
+
             // Matikan blokade klik (Raycast Target) agar tidak mengganggu klik spatula/ticket
             Image panelImg = tutorialPanel.GetComponent<Image>();
             if (panelImg != null) panelImg.raycastTarget = false;
-            
+
             // Matikan juga buat textnya jika perlu
             if (dialogueText != null) dialogueText.raycastTarget = false;
         }
@@ -69,7 +69,15 @@ public class TutorialDialogueManager : MonoBehaviour
     {
         if (tutorialPanel != null) tutorialPanel.SetActive(true);
         currentStep = 1;
-        ShowDialogue("Hai chief, kamu pasti tidak penasaran kenapa kamu dipanggil kesini.. Cobalah Untuk mendekati mobil van disebelahmu itu..");
+        // ShowDialogue("Hai chief, kamu pasti tidak penasaran kenapa kamu dipanggil kesini.. Cobalah Untuk mendekati mobil van disebelahmu itu..");
+        StartCoroutine(StartTutorialRoutine());
+    }
+
+    private IEnumerator StartTutorialRoutine()
+    {
+        ShowDialogue("Hello there, welcome to your new job! Let's start with a quick tutorial to get you familiar with the basics.");
+        yield return new WaitForSeconds(7f);
+        ShowDialogue("First, approach the foodstall on your left, press E to open the stall!");
     }
 
     void Update()
@@ -81,7 +89,8 @@ public class TutorialDialogueManager : MonoBehaviour
             case 1: // Wait for entering CookingStationPOV
                 if (CameraManager.Instance != null && CameraManager.Instance.cookingCamera != null && CameraManager.Instance.cookingCamera.gameObject.activeInHierarchy)
                 {
-                    AdvanceStep(2, "Bagus! Hari ini adalah hari pertamamu. Mari kita buka warung dengan mengklik Spatula di sebelah kiri!");
+                    // AdvanceStep(2, "Bagus! Hari ini adalah hari pertamamu. Mari kita buka warung dengan mengklik Spatula di sebelah kiri!");
+                    AdvanceStep(2, "Great! Today is your first day, Let's open the stall by clicking the sign on the left!");
                 }
                 break;
 
@@ -89,35 +98,39 @@ public class TutorialDialogueManager : MonoBehaviour
                 if (waveMgr != null && waveMgr.IsRunning)
                 {
                     // Pemain sudah klik spatula, sekarang tunggu sampai customernya benar-benar spawn
-                    currentStep = 3; 
+                    currentStep = 3;
                 }
                 break;
-                
+
             case 3: // Wait for customer to spawn
                 if (waveMgr != null && waveMgr.activeCustomer != null)
                 {
-                    AdvanceStep(4, "Wah ada pelanggan datang! Dia memesan kebab. Cepat klik area Kompor untuk mulai meracik!");
+                    // AdvanceStep(4, "Wah ada pelanggan datang! Dia memesan kebab. Cepat klik area Kompor untuk mulai meracik!");
+                    AdvanceStep(4, "Look! A customer is coming! They ordered a kebab. Quick click the Stove area to start assembling the order!");
                 }
                 break;
-            
+
             case 4: // Wait for Cooking POV
                 if (kebabAssembly != null && kebabAssembly.gameObject.activeInHierarchy)
                 {
-                    AdvanceStep(5, "Pertama-tama, siapkan kulitnya. Klik ikon Tortilla di daftar bahan!");
+                    // AdvanceStep(5, "Pertama-tama, siapkan kulitnya. Klik ikon Tortilla di daftar bahan!");
+                    AdvanceStep(5, "First, prepare the wrap. Click the Tortilla icon in the ingredient list!");
                 }
                 break;
 
             case 5: // Wait for Tortilla
                 if (kebabAssembly != null && kebabAssembly.HasTortilla)
                 {
-                    AdvanceStep(6, "Bagus! Sekarang klik daging dan sayur untuk memasukkannya sesuai pesanan.");
+                    // AdvanceStep(6, "Bagus! Sekarang klik daging dan sayur untuk memasukkannya sesuai pesanan.");
+                    AdvanceStep(6, "Great! Now click the meat and veggies to add them according to their order");
                 }
                 break;
 
             case 6: // Wait for Ingredients
                 if (kebabAssembly != null && kebabAssembly.GetIngredients().Count >= 2)
                 {
-                    AdvanceStep(7, "Lengkap! Sekarang klik Wajan (Ngompor) untuk memanggang dagingnya dan ikuti Minigame-nya!");
+                    // AdvanceStep(7, "Lengkap! Sekarang klik Wajan (Ngompor) untuk memanggang dagingnya dan ikuti Minigame-nya!");
+                    AdvanceStep(7, "All set! Now click the Stove to start cooking and follow the minigame instructions!");
                 }
                 break;
 
@@ -125,14 +138,16 @@ public class TutorialDialogueManager : MonoBehaviour
                 PlayerInventory inv = FindObjectOfType<PlayerInventory>();
                 if (inv != null && inv.HasItem(waveMgr.kebabResult))
                 {
-                    AdvanceStep(8, "Kebabnya berhasil dibuat! Klik ikon 'Kembali' untuk menemui pelanggan di depan.");
+                    // AdvanceStep(8, "Kebabnya berhasil dibuat! Klik ikon 'Kembali' untuk menemui pelanggan di depan.");
+                    AdvanceStep(8, "The kebab is ready! Click the 'Back' icon to meet your customer in front.");
                 }
                 break;
 
             case 8: // Wait for Station POV
                 if (kebabAssembly != null && !kebabAssembly.gameObject.activeInHierarchy)
                 {
-                    AdvanceStep(9, "Terakhir, berikan Kebab ini kepada pelanggan dengan menekan Ticket Order (Buku Pesanan) di sebelah kanan kompor!");
+                    // AdvanceStep(9, "Terakhir, berikan Kebab ini kepada pelanggan dengan menekan Ticket Order (Buku Pesanan) di sebelah kanan kompor!");
+                    AdvanceStep(9, "Finally, serve the kebab to the customer by clicking the Ticket Order Book icon!");
                 }
                 break;
 
@@ -147,7 +162,7 @@ public class TutorialDialogueManager : MonoBehaviour
                     }
                 }
                 break;
-            
+
             case 10:
                 // Sedang baca monolog jahat. Nunggu coroutine jalan ke Step 11
                 break;
@@ -163,7 +178,7 @@ public class TutorialDialogueManager : MonoBehaviour
             case 12: // Wait for player to exit Van (CookingCamera becomes inactive)
                 if (CameraManager.Instance != null && CameraManager.Instance.cookingCamera != null && !CameraManager.Instance.cookingCamera.gameObject.activeInHierarchy)
                 {
-                    AdvanceStep(13, "Pergi menuju Tempat peristirahatan dibawah, Tidurlah....");
+                    AdvanceStep(13, "Go to sleep at your tent to end the day, and start your real journey tomorrow!");
                 }
                 break;
 
@@ -180,15 +195,15 @@ public class TutorialDialogueManager : MonoBehaviour
 
     private IEnumerator PlayEndingMonologue()
     {
-        ShowDialogue("Kerja bagus! Latihan selesai.");
+        ShowDialogue("Good job.");
         yield return new WaitForSeconds(4f); // Tunggu sampai selesai ngetik + baca
-        
+
         if (currentStep != 10) yield break; // Safety check
-        ShowDialogue("Tapi ingat... Kau harus menyetorkan uang kepadaku jika kau ingin hidup!");
+        ShowDialogue("But remember... You have to pay me if you want to live!");
         yield return new WaitForSeconds(5f);
 
         if (currentStep != 10) yield break;
-        ShowDialogue("Carilah uang sebanyak-banyaknya dan berusahalah untuk bertahan hidup ahhahahaha!");
+        ShowDialogue("Find as much money as you can and do your best to survive ahahahaha!");
         yield return new WaitForSeconds(6f);
 
         if (currentStep == 10)
@@ -215,7 +230,7 @@ public class TutorialDialogueManager : MonoBehaviour
     {
         isTyping = true;
         dialogueText.text = "";
-        
+
         int charCount = 0;
         foreach (char c in text)
         {
@@ -226,7 +241,7 @@ public class TutorialDialogueManager : MonoBehaviour
             if (audioSource != null && talkSounds != null && talkSounds.Length > 0)
             {
                 // Mainkan suara tiap 2 huruf sekali biar gak tumpang tindih berisik
-                if (charCount % 2 == 0 && c != ' ') 
+                if (charCount % 2 == 0 && c != ' ')
                 {
                     audioSource.pitch = Random.Range(0.95f, 1.05f);
                     audioSource.PlayOneShot(talkSounds[Random.Range(0, talkSounds.Length)]);
