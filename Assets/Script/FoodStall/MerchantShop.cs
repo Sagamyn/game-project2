@@ -23,14 +23,14 @@ public class MerchantShop : MonoBehaviour
     public List<BuffData> allBuffs;
 
     [Header("Fan Positions (anchored on Canvas)")]
-    public Vector2 leftCardPos   = new Vector2(-180f, -200f);
-    public Vector2 centerCardPos = new Vector2(0f,    -180f);
-    public Vector2 rightCardPos  = new Vector2(180f,  -200f);
+    public Vector2 leftCardPos = new Vector2(-180f, -200f);
+    public Vector2 centerCardPos = new Vector2(0f, -180f);
+    public Vector2 rightCardPos = new Vector2(180f, -200f);
 
     [Header("Fan Rotations")]
-    public float leftRotation   = -12f;
+    public float leftRotation = -12f;
     public float centerRotation = 0f;
-    public float rightRotation  = 12f;
+    public float rightRotation = 12f;
 
     [Header("Merchant Spawn Position")]
     // Match this to where your Merchant Image sits on the canvas
@@ -48,12 +48,15 @@ public class MerchantShop : MonoBehaviour
     [Header("ESC Hint")]
     public GameObject escHintObject;
 
+    [Header("Skip")]
+    public Button skipButton;
+
     // Runtime
     private List<BuffData> currentOfferedBuffs = new List<BuffData>();
     private int currentRerollCost;
-    private bool cardsInteractable  = false;
+    private bool cardsInteractable = false;
     private BuffCardUI selectedCard = null;
-    private bool isHandling         = false;
+    private bool isHandling = false;
 
     void Start()
     {
@@ -67,6 +70,13 @@ public class MerchantShop : MonoBehaviour
         {
             rerollButton.gameObject.SetActive(false);
             rerollButton.onClick.AddListener(OnRerollClicked);
+        }
+
+        // Skip merchant shop
+        if (skipButton != null)
+        {
+            skipButton.gameObject.SetActive(false);
+            skipButton.onClick.AddListener(OnSkipClicked);
         }
 
         HideDimOverlay();
@@ -92,10 +102,10 @@ public class MerchantShop : MonoBehaviour
 
     public IEnumerator StartShop()
     {
-        cardsInteractable   = false;
-        currentRerollCost   = rerollBaseCost;
-        selectedCard        = null;
-        isHandling          = false;
+        cardsInteractable = false;
+        currentRerollCost = rerollBaseCost;
+        selectedCard = null;
+        isHandling = false;
 
         foreach (var card in cardSlots)
             card.HideInstant();
@@ -111,6 +121,10 @@ public class MerchantShop : MonoBehaviour
             rerollButton.gameObject.SetActive(true);
             UpdateRerollButton();
         }
+
+        // Skip merchant button
+        if (skipButton != null)
+            skipButton.gameObject.SetActive(true);
 
         cardsInteractable = true;
     }
@@ -134,13 +148,63 @@ public class MerchantShop : MonoBehaviour
     }
 
     // =========================================
+    // SKIP
+    // =========================================
+
+    void OnSkipClicked()
+    {
+        if (isHandling) return;
+        StartCoroutine(HandleSkip());
+    }
+    IEnumerator HandleSkip()
+    {
+        isHandling = true;
+        cardsInteractable = false;
+
+        if (rerollButton != null)
+            rerollButton.gameObject.SetActive(false);
+
+        if (skipButton != null)
+            skipButton.gameObject.SetActive(false);
+
+        if (escHintObject != null)
+            escHintObject.SetActive(false);
+
+        // Kalau ada card yang sedang di-expand, kecilkan dulu
+        if (selectedCard != null)
+        {
+            StartCoroutine(selectedCard.ShrinkBackToFan());
+            selectedCard = null;
+            yield return new WaitForSeconds(0.3f);
+        }
+
+        // Fly semua card balik ke merchant
+        yield return StartCoroutine(FlyAllCardsBack());
+
+        // Merchant kasih reaksi singkat
+        if (speechBubble != null)
+        {
+            yield return StartCoroutine(speechBubble.ShowAndType("Baiklah, lain kali saja."));
+            yield return new WaitForSeconds(0.8f);
+            yield return StartCoroutine(speechBubble.Hide());
+        }
+
+        FoodStallWaveManager waveManager =
+            FindObjectOfType<FoodStallWaveManager>();
+
+        waveManager?.OnMerchantShopDone();
+
+        isHandling = false;
+    }
+
+    // =========================================
     // DEAL CARDS
     // =========================================
 
     IEnumerator DealCards()
     {
-        Vector2[] positions  = { leftCardPos, centerCardPos, rightCardPos };
-        float[] rotations    = { leftRotation, centerRotation, rightRotation };
+        Vector2[] positions = { leftCardPos, centerCardPos, rightCardPos };
+        float[] rotations = { leftRotation, centerRotation, rightRotation };
 
         for (int i = 0; i < cardSlots.Length; i++)
         {
@@ -178,9 +242,9 @@ public class MerchantShop : MonoBehaviour
 
     IEnumerator SelectCard(BuffCardUI card)
     {
-        isHandling        = true;
+        isHandling = true;
         cardsInteractable = false;
-        selectedCard      = card;
+        selectedCard = card;
 
         // Disable all cards interactivity
         foreach (var c in cardSlots)
@@ -237,7 +301,7 @@ public class MerchantShop : MonoBehaviour
         yield return new WaitForSeconds(0.35f);
 
         cardsInteractable = true;
-        isHandling        = false;
+        isHandling = false;
     }
 
     // =========================================
@@ -252,7 +316,7 @@ public class MerchantShop : MonoBehaviour
 
     IEnumerator HandlePurchase(BuffCardUI card, BuffData buff)
     {
-        isHandling        = true;
+        isHandling = true;
         cardsInteractable = false;
 
         // Check money
@@ -265,7 +329,7 @@ public class MerchantShop : MonoBehaviour
 
             yield return StartCoroutine(speechBubble.Hide());
 
-            isHandling        = false;
+            isHandling = false;
             cardsInteractable = true;
             yield break;
         }
@@ -276,6 +340,10 @@ public class MerchantShop : MonoBehaviour
         // Hide ESC hint
         if (escHintObject != null)
             escHintObject.SetActive(false);
+
+        // Hide skip button
+        if (skipButton != null)
+            skipButton.gameObject.SetActive(false);
 
         // Hide reroll button
         if (rerollButton != null)
@@ -323,7 +391,7 @@ public class MerchantShop : MonoBehaviour
 
     IEnumerator HandleReroll()
     {
-        isHandling        = true;
+        isHandling = true;
         cardsInteractable = false;
 
         if (rerollButton != null)
@@ -348,7 +416,7 @@ public class MerchantShop : MonoBehaviour
         }
 
         cardsInteractable = true;
-        isHandling        = false;
+        isHandling = false;
     }
 
     // =========================================
@@ -377,10 +445,10 @@ public class MerchantShop : MonoBehaviour
 
         selectionDimOverlay.gameObject.SetActive(true);
 
-        float startAlpha  = fadeIn ? 0f : selectionDimAlpha;
+        float startAlpha = fadeIn ? 0f : selectionDimAlpha;
         float targetAlpha = fadeIn ? selectionDimAlpha : 0f;
-        float duration    = 0.2f;
-        float elapsed     = 0f;
+        float duration = 0.2f;
+        float elapsed = 0f;
 
         while (elapsed < duration)
         {

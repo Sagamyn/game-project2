@@ -20,7 +20,7 @@ public class Merchant : MonoBehaviour
 
     [Header("Idle Bob")]
     public float bobAmount = 8f;
-    public float bobSpeed  = 1.2f;
+    public float bobSpeed = 1.2f;
 
     [Header("Speech Bubble")]
     public MerchantSpeechBubble speechBubble;
@@ -37,7 +37,7 @@ public class Merchant : MonoBehaviour
     public Button payButton;
     public Button refuseButton;
     public TextMeshProUGUI payButtonText;
-    
+
     private int requiredDebtAmount = 0;
     private bool hasPaidDebt = false;
     private bool debtDecisionMade = false;
@@ -50,7 +50,7 @@ public class Merchant : MonoBehaviour
 
     void Awake()
     {
-        merchantRect     = merchantImage.GetComponent<RectTransform>();
+        merchantRect = merchantImage.GetComponent<RectTransform>();
         originalPosition = merchantRect.anchoredPosition;
 
         if (imagesToDarken != null)
@@ -71,10 +71,10 @@ public class Merchant : MonoBehaviour
 
         if (payButton != null)
             payButton.onClick.AddListener(OnPayClicked);
-            
+
         if (refuseButton != null)
             refuseButton.onClick.AddListener(OnRefuseClicked);
-            
+
         if (debtButtonContainer != null)
             debtButtonContainer.SetActive(false);
     }
@@ -104,7 +104,7 @@ public class Merchant : MonoBehaviour
         while (elapsed < fadeInDuration)
         {
             elapsed += Time.deltaTime;
-            float t      = elapsed / fadeInDuration;
+            float t = elapsed / fadeInDuration;
             float smooth = Mathf.SmoothStep(0f, 1f, t);
 
             if (merchantImage != null)
@@ -126,8 +126,8 @@ public class Merchant : MonoBehaviour
                     if (imagesToDarken[i] == null) continue;
 
                     Color original = originalColors[i];
-                    Color dark     = original * darkenAmount;
-                    dark.a         = original.a;
+                    Color dark = original * darkenAmount;
+                    dark.a = original.a;
 
                     imagesToDarken[i].color = Color.Lerp(
                         original, dark, smooth);
@@ -189,16 +189,15 @@ public class Merchant : MonoBehaviour
 
         speechBubble.gameObject.SetActive(true);
 
-        string greeting = (currentDay > 7) ? "Kau bertahan cukup lama ya..." : "Halo lagi, kawan lamaku...";
+        string greeting = (currentDay > 7) ? "You can survived this long huh..." : "We meet again...";
         yield return StartCoroutine(speechBubble.ShowAndType(greeting));
         yield return new WaitForSeconds(1f);
 
-        string demand = $"Waktunya membayar setoran mingguan. Serahkan padaku sejumlah ${requiredDebtAmount} SEKARANG JUGA!";
+        string demand = $"It's pay time. Hand over ${requiredDebtAmount} RIGHT NOW!";
         yield return StartCoroutine(speechBubble.ShowAndType(demand));
 
         if (payButtonText != null)
-            payButtonText.text = $"Bayar ${requiredDebtAmount}";
-
+            payButtonText.text = $"Pay ${requiredDebtAmount}";
         if (debtButtonContainer != null)
             debtButtonContainer.SetActive(true);
 
@@ -216,7 +215,7 @@ public class Merchant : MonoBehaviour
 
         if (hasPaidDebt)
         {
-            yield return StartCoroutine(speechBubble.ShowAndType("Hahaha... Bagus sekali. Bekerja keraslah untuk bertahan hidup minggu depan!"));
+            yield return StartCoroutine(speechBubble.ShowAndType("HAHAHA... GOOD BOY. DO YOUR JOB HARDER THAN BEFORE, I KNOW YOU CAN DO IT!"));
             yield return new WaitForSeconds(2f);
             yield return StartCoroutine(speechBubble.Hide());
 
@@ -253,14 +252,14 @@ public class Merchant : MonoBehaviour
     {
         if (payButton != null) payButton.interactable = false;
         if (refuseButton != null) refuseButton.interactable = false;
-        
+
         StartCoroutine(FailRoutine("Menolak? Bodoh sekali! MATILAH!"));
     }
 
     private IEnumerator FailRoutine(string failMessage)
     {
         debtDecisionMade = true;
-        
+
         if (debtButtonContainer != null)
             debtButtonContainer.SetActive(false);
 
@@ -269,13 +268,13 @@ public class Merchant : MonoBehaviour
 
         if (GameOverManager.Instance != null)
         {
-            GameOverManager.Instance.ShowCustomGameOver("DIEKSEKUSI IBLIS");
+            GameOverManager.Instance.ShowCustomGameOver("They took you away...");
         }
     }
 
     IEnumerator PlayIntroDialogue()
     {
-        if (speechBubble == null)     yield break;
+        if (speechBubble == null) yield break;
         if (introDialogues == null || introDialogues.Length == 0) yield break;
 
         speechBubble.gameObject.SetActive(true);
