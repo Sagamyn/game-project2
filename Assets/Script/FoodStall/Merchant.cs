@@ -48,6 +48,8 @@ public class Merchant : MonoBehaviour
     private RectTransform merchantRect;
     private Color[] originalColors;
 
+    int hariPenagihan = 1;
+
     void Awake()
     {
         merchantRect = merchantImage.GetComponent<RectTransform>();
@@ -155,7 +157,7 @@ public class Merchant : MonoBehaviour
         int currentDay = FindObjectOfType<DayNightManager>() != null ? FindObjectOfType<DayNightManager>().currentDay : 1;
 
         // Cek apakah hari ini hari penagihan hutang (Kelipatan 7)
-        if (currentDay > 0 && currentDay % 7 == 0)
+        if (currentDay > 0 && currentDay % hariPenagihan == 0)
         {
             // Mode Penagihan Hutang
             yield return StartCoroutine(PlayDebtDialogue(currentDay));
@@ -174,7 +176,7 @@ public class Merchant : MonoBehaviour
     public int CalculateDebt(int currentDay)
     {
         // Tagihan awal $500, lalu naik x1.2 setiap kelipatan 7
-        int cycle = currentDay / 7;
+        int cycle = currentDay / hariPenagihan;
         if (cycle < 1) cycle = 1;
         return Mathf.RoundToInt(500f * Mathf.Pow(1.2f, cycle - 1));
     }
@@ -189,7 +191,7 @@ public class Merchant : MonoBehaviour
 
         speechBubble.gameObject.SetActive(true);
 
-        string greeting = (currentDay > 7) ? "You can survived this long huh..." : "We meet again...";
+        string greeting = (currentDay > hariPenagihan) ? "You can survived this long huh..." : "We meet again...";
         yield return StartCoroutine(speechBubble.ShowAndType(greeting));
         yield return new WaitForSeconds(1f);
 
@@ -215,7 +217,7 @@ public class Merchant : MonoBehaviour
 
         if (hasPaidDebt)
         {
-            yield return StartCoroutine(speechBubble.ShowAndType("HAHAHA... GOOD BOY. DO YOUR JOB HARDER THAN BEFORE, I KNOW YOU CAN DO IT!"));
+            yield return StartCoroutine(speechBubble.ShowAndType("God's plan, God's plan.. you can't do this on your own, ayy!"));
             yield return new WaitForSeconds(2f);
             yield return StartCoroutine(speechBubble.Hide());
 
@@ -244,7 +246,7 @@ public class Merchant : MonoBehaviour
         }
         else
         {
-            StartCoroutine(FailRoutine("Beraninya kau menipuku! Uangmu tidak cukup, MATILAH!"));
+            StartCoroutine(FailRoutine("U a broke ahh fraud, go DIE!"));
         }
     }
 
@@ -253,7 +255,7 @@ public class Merchant : MonoBehaviour
         if (payButton != null) payButton.interactable = false;
         if (refuseButton != null) refuseButton.interactable = false;
 
-        StartCoroutine(FailRoutine("Menolak? Bodoh sekali! MATILAH!"));
+        StartCoroutine(FailRoutine("Get slimed then!"));
     }
 
     private IEnumerator FailRoutine(string failMessage)
@@ -268,7 +270,7 @@ public class Merchant : MonoBehaviour
 
         if (GameOverManager.Instance != null)
         {
-            GameOverManager.Instance.ShowCustomGameOver("They took you away...");
+            GameOverManager.Instance.ShowCustomGameOver("'Your kebab taste like dookie anyway..'");
         }
     }
 
